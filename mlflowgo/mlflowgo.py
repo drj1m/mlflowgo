@@ -1,3 +1,4 @@
+from .artifact_logger import ArtifactLogger
 import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import cross_val_score
@@ -8,6 +9,7 @@ import subprocess
 import threading
 import webbrowser
 import time
+import pandas as pd
 
 
 class MLFlowGo:
@@ -35,7 +37,7 @@ class MLFlowGo:
             mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment(experiment_name)
 
-    def run_experiment(self, model, X, y, cv=5, **kwargs):
+    def run_experiment(self, model: Pipeline, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, **kwargs):
         """
         Runs a cross-validation experiment with the given model and data, logs the metrics and model in MLFlow.
 
@@ -49,6 +51,7 @@ class MLFlowGo:
         """
         task_type = kwargs.get('task_type', None)
         metrics = kwargs.get('metrics', None)
+        feature_names = kwargs.get('feature_names', X.columns)
 
         if task_type is None:
             task_type = 'classification' if is_classifier(model) else 'regression'
@@ -63,7 +66,35 @@ class MLFlowGo:
             # Log parameters, metrics, and model
             self._log_params(model)
             self._log_metrics(cv_results, metrics)
+            if task_type == 'classification':
+                self._log_artifacts(model, X, y, feature_names)
             mlflow.sklearn.log_model(model, "model")
+
+    def _log_artifacts(self, model, X, y, feature_names):
+        """
+        Log artifacts
+        """
+        artifact_logger = ArtifactLogger()
+        model.fit(X, y)
+        y_pred, y_scores = model.predict(X), model.predict_proba(X)
+
+        # Plot and log ROC curve
+        artifact_logger.plot_roc_curve(y,
+                                       y_scores,
+                                       feature_names)
+
+        # Plot and log confusion matrix
+        artifact_logger.plot_confusion_matrix(y,
+                                              y_pred)
+
+        # Save and log data sample
+        artifact_logger.save_data_sample(X,
+                                         100)  # Log 100 samples
+
+        # Plot and log feature importance
+        if hasattr(model.named_steps['model'], 'feature_importances_'):
+            artifact_logger.plot_feature_importance(model,
+                                                    feature_names)
 
     def _log_params(self, model):
         """Logs the parameters of the model or pipeline."""
@@ -104,7 +135,6 @@ class MLFlowGo:
             elif task_type == 'regression' and scorer._sign == -1:  # Regression metrics
                 metrics.append(scorer_name)
         return metrics
-
 
     def run_mlflow_ui(self, port=5000, open_browser=True):
         """
