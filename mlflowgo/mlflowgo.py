@@ -2,6 +2,8 @@ import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
+from sklearn.base import is_classifier
+from sklearn.metrics._scorer import _SCORERS
 import subprocess
 import threading
 import webbrowser
@@ -33,7 +35,7 @@ class MLFlowGo:
             mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment(experiment_name)
 
-    def run_experiment(self, model, X, y, cv=5, metrics=['accuracy'], **kwargs):
+    def run_experiment(self, model, X, y, cv=5, **kwargs):
         """
         Runs a cross-validation experiment with the given model and data, logs the metrics and model in MLFlow.
 
@@ -45,10 +47,19 @@ class MLFlowGo:
             metrics (list of str, optional): Metrics to log. Defaults to ['accuracy'].
             **kwargs: Additional keyword arguments for cross_val_score function.
         """
+        task_type = kwargs.get('task_type', None)
+        metrics = kwargs.get('metrics', None)
+
+        if task_type is None:
+            task_type = 'classification' if is_classifier(model) else 'regression'
+
+        if metrics is None:
+            metrics = self._get_default_metrics(task_type)
+
         with mlflow.start_run(run_name=self._get_run_name(model)):
             # Perform cross-validation
             cv_results = cross_val_score(model, X, y, cv=cv, scoring=metrics[0], **kwargs)
-            
+
             # Log parameters, metrics, and model
             self._log_params(model)
             self._log_metrics(cv_results, metrics)
@@ -83,6 +94,17 @@ class MLFlowGo:
         else:
             name = type(model).__name__
         return name
+
+    def _get_default_metrics(self, task_type):
+        """Returns a list of default metrics based on the task type."""
+        metrics = []
+        for scorer_name, scorer in _SCORERS.items():
+            if task_type == 'classification' and scorer._sign == 1:  # Classification metrics
+                metrics.append(scorer_name)
+            elif task_type == 'regression' and scorer._sign == -1:  # Regression metrics
+                metrics.append(scorer_name)
+        return metrics
+
 
     def run_mlflow_ui(self, port=5000, open_browser=True):
         """
