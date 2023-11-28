@@ -1,0 +1,9 @@
+# extension
+*.ipynb
+*.ipynb_checkpoints
+
+# Byte files
+__pycache__/
+
+# MLFlow 
+mlruns/
