@@ -48,7 +48,7 @@ class ArtifactLogger:
     def _plot_multi_class_roc_curve(self, y_true, y_scores, class_names):
         """ Plots a ROC curve for a multi-class classifier
         """
-        
+
         # Binarize the output for multi-class
         y_true_binarized = label_binarize(y_true, classes=np.unique(y_true))
 
@@ -108,8 +108,8 @@ class ArtifactLogger:
             mlflow.log_artifact(tmp.name, 'ROC Curve')
         os.remove(tmp.name)
 
-    def plot_feature_importance(self, model, feature_names):
-        importances = model.named_steps['model'].feature_importances_
+    def plot_feature_importance(self, pipeline, model_step, feature_names):
+        importances = pipeline.named_steps[model_step].feature_importances_
         indices = np.argsort(importances)
 
         plt.figure()
@@ -140,5 +140,5 @@ class ArtifactLogger:
         sample = pd.DataFrame(data).sample(n=sample_size)
         with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
             sample.to_csv(tmp.name, index=False)
-            mlflow.log_artifact(tmp.name, 'data_sample')
+            mlflow.log_artifact(tmp.name, 'Data Sample')
         os.remove(tmp.name)
