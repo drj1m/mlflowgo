@@ -37,12 +37,12 @@ class MLFlowGo:
             mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment(experiment_name)
 
-    def run_experiment(self, model: Pipeline, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, **kwargs):
+    def run_experiment(self, pipeline: Pipeline, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, **kwargs):
         """
-        Runs a cross-validation experiment with the given model and data, logs the metrics and model in MLFlow.
+        Runs a cross-validation experiment with the given pipeline and data, logs the metrics and model in MLFlow.
 
         Parameters:
-            model (estimator): The scikit-learn compatible model or pipeline to evaluate.
+            pipeline (sklearn.pipeline.Pipeline): The scikit-learn compatible pipeline to evaluate.
             X (array-like): Feature dataset.
             y (array-like): Target values.
             cv (int, optional): Number of cross-validation splits. Defaults to 5.
@@ -54,29 +54,30 @@ class MLFlowGo:
         feature_names = kwargs.get('feature_names', X.columns)
 
         if task_type is None:
-            task_type = 'classification' if is_classifier(model) else 'regression'
+            task_type = 'classification' if is_classifier(pipeline) else 'regression'
 
         if metrics is None:
             metrics = self._get_default_metrics(task_type)
 
-        with mlflow.start_run(run_name=self._get_run_name(model)):
+        with mlflow.start_run(run_name=self._get_run_name(pipeline)):
             # Perform cross-validation
-            cv_results = cross_val_score(model, X, y, cv=cv, scoring=metrics[0], **kwargs)
+            cv_results = cross_val_score(pipeline, X, y, cv=cv, scoring=metrics[0], **kwargs)
 
             # Log parameters, metrics, and model
-            self._log_params(model)
+            self._log_params(pipeline)
             self._log_metrics(cv_results, metrics)
             if task_type == 'classification':
-                self._log_artifacts(model, X, y, feature_names)
-            mlflow.sklearn.log_model(model, "model")
+                self._log_artifacts(pipeline, X, y, feature_names)
+            mlflow.sklearn.log_model(pipeline,
+                                     self._get_model_step_from_pipeline(pipeline))
 
-    def _log_artifacts(self, model, X, y, feature_names):
+    def _log_artifacts(self, pipeline, X, y, feature_names):
         """
         Log artifacts
         """
         artifact_logger = ArtifactLogger()
-        model.fit(X, y)
-        y_pred, y_scores = model.predict(X), model.predict_proba(X)
+        pipeline.fit(X, y)
+        y_pred, y_scores = pipeline.predict(X), pipeline.predict_proba(X)
 
         # Plot and log ROC curve
         artifact_logger.plot_roc_curve(y,
@@ -92,16 +93,18 @@ class MLFlowGo:
                                          100)  # Log 100 samples
 
         # Plot and log feature importance
-        if hasattr(model.named_steps['model'], 'feature_importances_'):
-            artifact_logger.plot_feature_importance(model,
+        model_step = self._get_model_step_from_pipeline(pipeline)
+        if hasattr(pipeline.named_steps[model_step], 'feature_importances_'):
+            artifact_logger.plot_feature_importance(pipeline,
+                                                    model_step,
                                                     feature_names)
 
-    def _log_params(self, model):
+    def _log_params(self, pipeline):
         """Logs the parameters of the model or pipeline."""
-        if isinstance(model, Pipeline):
-            params = model.get_params()
+        if isinstance(pipeline, Pipeline):
+            params = pipeline.get_params()
         else:
-            params = model.__dict__
+            params = pipeline.__dict__
         mlflow.log_params(params)
 
     def _log_metrics(self, cv_results, metrics):
@@ -110,21 +113,37 @@ class MLFlowGo:
             mlflow.log_metric(f"mean_{metric}", cv_results.mean())
             mlflow.log_metric(f"std_{metric}", cv_results.std())
 
-    def _get_run_name(self, model):
+    def _get_run_name(self, pipeline):
         """
         Generates a run name based on the model or pipeline.
 
         Parameters:
-            model (estimator): The model or pipeline for which to generate the run name.
+            pipeline (sklearn.pipeline.Pipeline): The pipeline for which to generate the run name.
 
         Returns:
             str: Generated run name.
         """
-        if isinstance(model, Pipeline):
-            name = "|".join([step[0] for step in model.steps])
+        if isinstance(pipeline, Pipeline):
+            name = "|".join([step[0] for step in pipeline.steps])
         else:
-            name = type(model).__name__
+            name = type(pipeline).__name__
         return name
+
+    def _get_model_step_from_pipeline(self, pipeline):
+        """
+        Identify the model step from the pipeline
+        Parameters:
+            pipeline (sklearn.pipeline.Pipeline): The pipeline object
+        returns:
+            step_name (str): Name of the step
+        """
+        if not isinstance(pipeline, Pipeline):
+            raise ValueError("The provided object is not a scikit-learn Pipeline.")
+
+        for step_name, step in pipeline.steps:
+            # A model is expected to have a 'predict' method
+            if hasattr(step, 'predict'):
+                return step_name
 
     def _get_default_metrics(self, task_type):
         """Returns a list of default metrics based on the task type."""
