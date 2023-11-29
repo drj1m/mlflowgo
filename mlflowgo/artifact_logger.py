@@ -82,7 +82,7 @@ class ArtifactLogger:
         roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
         # Plot the ROC curves
-        plt.figure(figsize=(8, 6))
+        plt.figure()
         plt.plot(fpr["micro"], tpr["micro"],
                  label=f'micro-average ROC curve (area = {roc_auc["micro"]:0.2f})',
                  color='deeppink', linestyle=':', linewidth=4)
@@ -118,7 +118,7 @@ class ArtifactLogger:
         plt.yticks(range(len(indices)), [feature_names[i] for i in indices])
         plt.xlabel('Relative Importance')
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-            plt.savefig(tmp.name)
+            plt.savefig(tmp.name, bbox_inches="tight")
             plt.close()
             mlflow.log_artifact(tmp.name, 'Feature Importance')
         os.remove(tmp.name)
@@ -126,12 +126,12 @@ class ArtifactLogger:
     def plot_confusion_matrix(self, y_true, y_pred):
         cm = confusion_matrix(y_true, y_pred)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-        fig, ax = plt.subplots(figsize=(8, 8))
+        fig, ax = plt.subplots()
         disp.plot(ax=ax, cmap=plt.cm.Blues)
         plt.title("Confusion Matrix")
         plt.grid(False)
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-            plt.savefig(tmp.name)
+            plt.savefig(tmp.name, bbox_inches="tight")
             plt.close()
             mlflow.log_artifact(tmp.name, 'Confusion Matrix')
         os.remove(tmp.name)
