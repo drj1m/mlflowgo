@@ -22,7 +22,16 @@ class ArtifactLogger:
         pass
 
     def log_roc_curve(self, y_true, y_scores, feature_names):
-        """ Determine which function to call to produce a ROC curve
+        """
+        Determine which function to call to produce a ROC curve.
+
+        Parameters:
+        y_true (array-like): True labels of the data.
+
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
+                or binary decisions.
+        
+        feature_names (list): List of feature names.
         """
         if len(np.unique(y_true)) > 2:
             self._log_multi_class_roc_curve(y_true, y_scores, feature_names)
@@ -30,7 +39,14 @@ class ArtifactLogger:
             self._log_binary_roc_curve(y_true, y_scores)
 
     def _plot_binary_roc_curve(self, y_true, y_scores):
-        """ Plots a ROC curve for a binary classifier
+        """
+        Logs a ROC curve for a binary classifier as an MLflow artifact.
+
+        Parameters:
+        y_true (array-like): True labels of the data.
+
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
+                or binary decisions.
         """
         fpr, tpr, _ = roc_curve(y_true, y_scores)
         roc_auc = auc(fpr, tpr)
@@ -47,7 +63,16 @@ class ArtifactLogger:
         os.remove(tmp.name)
 
     def _log_multi_class_roc_curve(self, y_true, y_scores, class_names):
-        """ Plots a ROC curve for a multi-class classifier
+        """
+        Logs a ROC curve for a multi-class classifier as an MLflow artifact.
+
+        Parameters:
+        y_true (array-like): True labels of the data.
+
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
+                or binary decisions.
+
+        class_names (list): List of class names corresponding to the labels.
         """
 
         # Binarize the output for multi-class
@@ -114,15 +139,12 @@ class ArtifactLogger:
         Logs a precision-recall curve plot as an MLflow artifact.
 
         Parameters:
-        y_true: array-like of shape (n_samples,)
-                True labels of the data.
+        y_true (array-like): True labels of the data.
 
-        y_scores: array-like of shape (n_samples,) or (n_samples, n_classes)
-                Target scores. Can either be probability estimates, confidence values, 
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
                 or binary decisions.
 
-        class_names: list
-                    List of class names corresponding to the labels.
+        class_names (list): List of class names corresponding to the labels.
         """
         # Compute Precision-Recall and plot curve
         precision = dict()
@@ -157,6 +179,16 @@ class ArtifactLogger:
         os.remove(tmp.name)
 
     def log_feature_importance(self, pipeline, model_step, feature_names):
+        """
+        Logs basic feature importance as an MLflow artifact.
+
+        Parameters:
+        pipeline (sklearn.Pipeline): pipeline object.
+
+        model_step (string): Step name for the model in the pipeline.
+
+        feature_names (list): List of feature names.
+        """
         importances = pipeline.named_steps[model_step].feature_importances_
         indices = np.argsort(importances)
 
@@ -172,6 +204,14 @@ class ArtifactLogger:
         os.remove(tmp.name)
 
     def log_confusion_matrix(self, y_true, y_pred):
+        """
+        Logs confusion matrix as an MLflow artifact.
+
+        Parameters:
+        y_true (array-like): The true values for y.
+
+        y_pred (array-like): The prediction values for y.
+        """
         cm = confusion_matrix(y_true, y_pred)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
         fig, ax = plt.subplots()
@@ -185,6 +225,14 @@ class ArtifactLogger:
         os.remove(tmp.name)
 
     def log_data_sample(self, data, sample_size):
+        """
+        Logs a data sample as an MLflow artifact.
+
+        Parameters:
+        data (array-like): The feature dataset.
+
+        sample_size (int): The size of the sample to store.
+        """
         sample = pd.DataFrame(data).sample(n=sample_size)
         with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
             sample.to_csv(tmp.name, index=False)
