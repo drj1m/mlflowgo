@@ -148,6 +148,16 @@ class MLFlowGo(Base):
                                                   self.X_test,
                                                   self.y_test)
 
+            # Log QQ plot
+            artifact_logger.log_qq_plot(pipeline,
+                                        self.X_test,
+                                        self.y_test)
+
+            # Log scale location plot
+            artifact_logger.log_scale_location_plot(pipeline,
+                                                    self.X_test,
+                                                    self.y_test)
+
         # Log data sample
         artifact_logger.log_data_sample(self.X_test,
                                         10)  # Log 10 samples

@@ -7,6 +7,7 @@ from sklearn.metrics import (
     classification_report, mean_squared_error, mean_absolute_error, r2_score)
 from sklearn.model_selection import learning_curve, validation_curve
 from sklearn.calibration import calibration_curve
+import scipy.stats as stats
 import numpy as np
 import pandas as pd
 import os
@@ -612,3 +613,46 @@ class ArtifactLogger:
 
         # Remove the temporary file
         os.remove(tmp.name)
+
+    def log_qq_plot(self, pipeline, X_test, y_test):
+        """
+        Generates and logs a Q-Q plot as an MLflow artifact to assess normality of residuals.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        """
+        residuals = y_test - pipeline.predict(X_test)
+        plt.figure(figsize=(8, 6))
+        stats.probplot(residuals, dist="norm", plot=plt)
+        plt.title('Q-Q Plot')
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            mlflow.log_artifact(tmp.name, 'QQ Plot')
+            os.remove(tmp.name)
+
+    def log_scale_location_plot(self, pipeline, X_test, y_test):
+        """
+        Generates and logs a scale-location plot as an MLflow artifact to check homoscedasticity.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        """
+        y_pred = pipeline.predict(X_test)
+        residuals = y_test - y_pred
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_pred, np.sqrt(np.abs(residuals)), alpha=0.5)
+        plt.xlabel('Predicted values')
+        plt.ylabel('Sqrt(Absolute Residuals)')
+        plt.title('Scale-Location Plot')
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            mlflow.log_artifact(tmp.name, 'Scale Location Plot')
+            os.remove(tmp.name)
