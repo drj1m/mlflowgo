@@ -91,23 +91,28 @@ class MLFlowGo(Base):
         y_pred, y_scores = pipeline.predict(X), pipeline.predict_proba(X)
 
         if is_classifier(pipeline):
-            # Plot and log ROC curve
-            artifact_logger.plot_roc_curve(y,
-                                           y_scores,
-                                           feature_names)
-            # Plot and log confusion matrix
-            artifact_logger.plot_confusion_matrix(y,
-                                                  y_pred)
+            # Log ROC curve
+            artifact_logger.log_roc_curve(y,
+                                          y_scores,
+                                          feature_names)
+            # Log confusion matrix
+            artifact_logger.log_confusion_matrix(y,
+                                                 y_pred)
 
-        # Save and log data sample
-        artifact_logger.save_data_sample(X,
-                                         100)  # Log 100 samples
+            # Log precision recall curve
+            artifact_logger.log_precision_recall_curve(y,
+                                                       y_scores,
+                                                       pipeline.named_steps[self.model_step].classes_)
 
-        # Plot and log feature importance
+        # Log data sample
+        artifact_logger.log_data_sample(X,
+                                        100)  # Log 100 samples
+
+        # Log feature importance
         if hasattr(pipeline.named_steps[self.model_step], 'feature_importances_'):
-            artifact_logger.plot_feature_importance(pipeline,
-                                                    self.model_step,
-                                                    feature_names)
+            artifact_logger.log_feature_importance(pipeline,
+                                                   self.model_step,
+                                                   feature_names)
 
     def _log_params(self, pipeline):
         """

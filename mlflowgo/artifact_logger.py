@@ -2,7 +2,8 @@ import mlflow
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import (
-    roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay)
+    roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay,
+    precision_recall_curve, average_precision_score)
 import numpy as np
 import pandas as pd
 import os
@@ -20,13 +21,13 @@ class ArtifactLogger:
     def __init__(self):
         pass
 
-    def plot_roc_curve(self, y_true, y_scores, feature_names):
+    def log_roc_curve(self, y_true, y_scores, feature_names):
         """ Determine which function to call to produce a ROC curve
         """
         if len(np.unique(y_true)) > 2:
-            self._plot_multi_class_roc_curve(y_true, y_scores, feature_names)
+            self._log_multi_class_roc_curve(y_true, y_scores, feature_names)
         else:
-            self._plot_binary_roc_curve(y_true, y_scores)
+            self._log_binary_roc_curve(y_true, y_scores)
 
     def _plot_binary_roc_curve(self, y_true, y_scores):
         """ Plots a ROC curve for a binary classifier
@@ -45,7 +46,7 @@ class ArtifactLogger:
             mlflow.log_artifact(tmp.name, 'ROC Curve')
         os.remove(tmp.name)
 
-    def _plot_multi_class_roc_curve(self, y_true, y_scores, class_names):
+    def _log_multi_class_roc_curve(self, y_true, y_scores, class_names):
         """ Plots a ROC curve for a multi-class classifier
         """
 
@@ -108,7 +109,54 @@ class ArtifactLogger:
             mlflow.log_artifact(tmp.name, 'ROC Curve')
         os.remove(tmp.name)
 
-    def plot_feature_importance(self, pipeline, model_step, feature_names):
+    def log_precision_recall_curve(selk, y_true, y_scores, class_names):
+        """
+        Logs a precision-recall curve plot as an MLflow artifact.
+
+        Parameters:
+        y_true: array-like of shape (n_samples,)
+                True labels of the data.
+
+        y_scores: array-like of shape (n_samples,) or (n_samples, n_classes)
+                Target scores. Can either be probability estimates, confidence values, 
+                or binary decisions.
+
+        class_names: list
+                    List of class names corresponding to the labels.
+        """
+        # Compute Precision-Recall and plot curve
+        precision = dict()
+        recall = dict()
+        average_precision = dict()
+        n_classes = len(class_names)
+
+        for i in range(n_classes):
+            precision[i], recall[i], _ = precision_recall_curve(y_true == i, y_scores[:, i])
+            average_precision[i] = average_precision_score(y_true == i, y_scores[:, i])
+
+        # Plot the Precision-Recall curve for each class
+        plt.figure(figsize=(7, 7))
+        for i, color in zip(range(n_classes), plt.cm.viridis(np.linspace(0, 1, n_classes))):
+            plt.plot(recall[i], precision[i], color=color, lw=2,
+                    label=f'Precision-Recall curve of class {class_names[i]} (area = {average_precision[i]:0.2f})')
+
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('Precision-Recall Curve')
+        plt.legend(loc="lower left")
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'precision_recall_curve.png')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_feature_importance(self, pipeline, model_step, feature_names):
         importances = pipeline.named_steps[model_step].feature_importances_
         indices = np.argsort(importances)
 
@@ -123,7 +171,7 @@ class ArtifactLogger:
             mlflow.log_artifact(tmp.name, 'Feature Importance')
         os.remove(tmp.name)
 
-    def plot_confusion_matrix(self, y_true, y_pred):
+    def log_confusion_matrix(self, y_true, y_pred):
         cm = confusion_matrix(y_true, y_pred)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
         fig, ax = plt.subplots()
@@ -136,7 +184,7 @@ class ArtifactLogger:
             mlflow.log_artifact(tmp.name, 'Confusion Matrix')
         os.remove(tmp.name)
 
-    def save_data_sample(self, data, sample_size):
+    def log_data_sample(self, data, sample_size):
         sample = pd.DataFrame(data).sample(n=sample_size)
         with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
             sample.to_csv(tmp.name, index=False)
