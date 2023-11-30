@@ -134,9 +134,9 @@ class MLFlowGo(Base):
                                                  self.X_test,
                                                  self.y_test)
 
-            # Log data sample
-            artifact_logger.log_data_sample(self.X_test,
-                                            10)  # Log 10 samples
+        # Log data sample
+        artifact_logger.log_data_sample(self.X_test,
+                                        10)  # Log 10 samples
 
         # Log feature importance
         if hasattr(pipeline.named_steps[self.model_step], 'feature_importances_'):
