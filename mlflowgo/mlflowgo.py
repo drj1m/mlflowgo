@@ -67,19 +67,18 @@ class MLFlowGo(Base):
 
         with mlflow.start_run(run_name=self.get_run_name(self.pipeline)):
             # Perform cross-validation
-            cv_results = cross_val_score(
+            cv_results = [cross_val_score(
                 self.pipeline,
                 self.X_train,
                 self.y_train,
                 cv=cv,
-                scoring=self.metrics[0])
+                scoring=m) for m in self.metrics]
 
             # Log parameters, metrics, and model
             self._log_params(self.pipeline)
             self._log_metrics(cv_results, self.metrics)
-            if self.task_type == CLASSIFIER_KEY:
-                self._log_artifacts(self.pipeline,
-                                    self.feature_names)
+            self._log_artifacts(self.pipeline,
+                                self.feature_names)
             mlflow.sklearn.log_model(self.pipeline,
                                      self.model_step)
 
@@ -93,9 +92,10 @@ class MLFlowGo(Base):
         """
         artifact_logger = ArtifactLogger()
         pipeline.fit(self.X_train, self.y_train)
-        y_pred, y_scores = pipeline.predict(self.X_test), pipeline.predict_proba(self.X_test)
+        y_pred = pipeline.predict(self.X_test)
 
-        if is_classifier(pipeline):
+        if self.task_type == CLASSIFIER_KEY:
+            y_scores = pipeline.predict_proba(self.X_test)
             # Log ROC curve
             artifact_logger.log_roc_curve(self.y_test,
                                           y_scores,
@@ -159,9 +159,9 @@ class MLFlowGo(Base):
 
     def _log_metrics(self, cv_results, metrics):
         """Logs the metrics from cross-validation results."""
-        for metric in metrics:
-            mlflow.log_metric(f"mean_{metric}", cv_results.mean())
-            mlflow.log_metric(f"std_{metric}", cv_results.std())
+        for idx, metric in enumerate(metrics):
+            mlflow.log_metric(f"mean_{metric}", cv_results[idx].mean())
+            mlflow.log_metric(f"std_{metric}", cv_results[idx].std())
 
     def run_mlflow_ui(self, port=5000, open_browser=True):
         """
