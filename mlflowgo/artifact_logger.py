@@ -161,7 +161,7 @@ class ArtifactLogger:
         plt.figure(figsize=(8, 6))
 
         y_proba = pipeline.predict_proba(X)
-        
+
         for idx, cls in enumerate(classes):
             y_class = (y == cls).astype(int)  # One-vs-rest for current class
             class_proba = y_proba[:, idx]
