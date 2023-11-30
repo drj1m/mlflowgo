@@ -22,7 +22,7 @@ class ArtifactLogger:
     def __init__(self):
         pass
 
-    def log_roc_curve(self, y_true, y_scores, feature_names):
+    def log_roc_curve(self, y_true, y_scores, class_names):
         """
         Determine which function to call to produce a ROC curve.
 
@@ -32,10 +32,10 @@ class ArtifactLogger:
         y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
                 or binary decisions.
 
-        feature_names (list): List of feature names.
+        class_names (list): List of class names.
         """
         if len(np.unique(y_true)) > 2:
-            self._log_multi_class_roc_curve(y_true, y_scores, feature_names)
+            self._log_multi_class_roc_curve(y_true, y_scores, class_names)
         else:
             self._log_binary_roc_curve(y_true, y_scores)
 

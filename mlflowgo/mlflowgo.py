@@ -94,7 +94,7 @@ class MLFlowGo(Base):
             # Log ROC curve
             artifact_logger.log_roc_curve(y,
                                           y_scores,
-                                          feature_names)
+                                          pipeline.named_steps[self.model_step].classes_)
             # Log confusion matrix
             artifact_logger.log_confusion_matrix(y,
                                                  y_pred)
