@@ -120,6 +120,15 @@ class MLFlowGo(Base):
                                                 cv=5,
                                                 scoring=self.metrics[0])
 
+            # Log validation curve
+            artifact_logger.log_validation_curve(pipeline,
+                                                 self.X_train,
+                                                 self.y_train,
+                                                 param_name=f'{self.model_step}__n_estimators',
+                                                 param_range=[50, 100, 200, 500],
+                                                 cv=5,
+                                                 scoring=self.metrics[0])
+
             # Log data sample
             artifact_logger.log_data_sample(self.X_test,
                                             10)  # Log 10 samples

@@ -5,7 +5,7 @@ from sklearn.metrics import (
     roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay,
     precision_recall_curve, average_precision_score,
     classification_report)
-from sklearn.model_selection import learning_curve
+from sklearn.model_selection import learning_curve, validation_curve
 import numpy as np
 import pandas as pd
 import os
@@ -70,6 +70,61 @@ class ArtifactLogger:
 
             # Log the temporary file as an artifact
             mlflow.log_artifact(tmp.name, 'Learning Curves')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_validation_curve(self, pipeline, X, y, param_name, param_range, cv, scoring):
+        """
+        Generates and logs validation curve plot as an MLflow artifact.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        param_name(str): Name of the parameter to vary.
+        param_range (array-like): The values of the parameter that will be evaluated.
+        cv (int, optional): Number of cross-validation splits.
+        scoring(str): A str (see model evaluation documentation) or a scorer callable object/function.
+        """
+        train_scores, test_scores = validation_curve(
+            pipeline,
+            X,
+            y,
+            param_name=param_name,
+            param_range=param_range,
+            cv=cv,
+            scoring=scoring,
+            n_jobs=-1
+        )
+
+        # Calculate mean and standard deviation for training set scores
+        train_mean = np.mean(train_scores, axis=1)
+        train_std = np.std(train_scores, axis=1)
+
+        # Calculate mean and standard deviation for test set scores
+        test_mean = np.mean(test_scores, axis=1)
+        test_std = np.std(test_scores, axis=1)
+
+        # Plot validation curves
+        plt.plot(param_range, train_mean, label="Training score", color="blue", marker='o')
+        plt.fill_between(param_range, train_mean - train_std, train_mean + train_std, color="blue", alpha=0.15)
+
+        plt.plot(param_range, test_mean, label="Cross-validation score", color="green", marker='o')
+        plt.fill_between(param_range, test_mean - test_std, test_mean + test_std, color="green", alpha=0.15)
+
+        plt.title("Validation Curve")
+        plt.xlabel(param_name)
+        plt.ylabel(scoring)
+        plt.legend(loc="best")
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Validation Curve')
 
         # Remove the temporary file
         os.remove(tmp.name)
