@@ -4,7 +4,7 @@ from sklearn.preprocessing import label_binarize
 from sklearn.metrics import (
     roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay,
     precision_recall_curve, average_precision_score,
-    classification_report)
+    classification_report, mean_squared_error, mean_absolute_error, r2_score)
 from sklearn.model_selection import learning_curve, validation_curve
 from sklearn.calibration import calibration_curve
 import numpy as np
@@ -566,6 +566,49 @@ class ArtifactLogger:
 
             # Log the temporary file as an artifact
             mlflow.log_artifact(tmp.name, 'Coefficient Plot')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_regression_report(self, pipeline, X_train, y_train, X_test, y_test):
+        """
+        Generates and logs a model summary as an MLflow artifact for regression models.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        X_train, y_train (pd.DataFrame): Training dataset (features and target).
+        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        """
+        # Predictions on training and test sets
+        y_train_pred = pipeline.predict(X_train)
+        y_test_pred = pipeline.predict(X_test)
+
+        # Calculate metrics
+        train_mse = mean_squared_error(y_train, y_train_pred)
+        test_mse = mean_squared_error(y_test, y_test_pred)
+        train_mae = mean_absolute_error(y_train, y_train_pred)
+        test_mae = mean_absolute_error(y_test, y_test_pred)
+        train_r2 = r2_score(y_train, y_train_pred)
+        test_r2 = r2_score(y_test, y_test_pred)
+
+        # Prepare summary text
+        summary_text = (
+            f"Model Summary:\n"
+            f"Training MSE: {train_mse:.3f}\n"
+            f"Test MSE: {test_mse:.3f}\n"
+            f"Training MAE: {train_mae:.3f}\n"
+            f"Test MAE: {test_mae:.3f}\n"
+            f"Training R-squared: {train_r2:.3f}\n"
+            f"Test R-squared: {test_r2:.3f}\n"
+        )
+
+        # Save the summary to a temporary file and log it
+        with tempfile.NamedTemporaryFile(mode='w+', suffix=".txt", delete=False) as tmp:
+            tmp.write(summary_text)
+            tmp.flush()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Regression Report')
 
         # Remove the temporary file
         os.remove(tmp.name)

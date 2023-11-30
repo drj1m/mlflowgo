@@ -141,6 +141,13 @@ class MLFlowGo(Base):
                                                      self.model_step,
                                                      self.feature_names)
 
+            # Log regression report
+            artifact_logger.log_regression_report(pipeline,
+                                                  self.X_train,
+                                                  self.y_train,
+                                                  self.X_test,
+                                                  self.y_test)
+
         # Log data sample
         artifact_logger.log_data_sample(self.X_test,
                                         10)  # Log 10 samples
