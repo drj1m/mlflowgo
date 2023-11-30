@@ -3,7 +3,7 @@ from . import CLASSIFIER_KEY
 from .base import Base
 import mlflow
 import mlflow.sklearn
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.base import is_classifier
 import subprocess
@@ -62,56 +62,67 @@ class MLFlowGo(Base):
             X.columns
         )
         self.model_step = self.get_model_step_from_pipeline(self.pipeline)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            X, y, test_size=0.33)
 
         with mlflow.start_run(run_name=self.get_run_name(self.pipeline)):
             # Perform cross-validation
             cv_results = cross_val_score(
-                self.pipeline, X, y, cv=cv, scoring=self.metrics[0])
+                self.pipeline,
+                self.X_train,
+                self.y_train,
+                cv=cv,
+                scoring=self.metrics[0])
 
             # Log parameters, metrics, and model
             self._log_params(self.pipeline)
             self._log_metrics(cv_results, self.metrics)
             if self.task_type == CLASSIFIER_KEY:
-                self._log_artifacts(self.pipeline, X, y, self.feature_names)
+                self._log_artifacts(self.pipeline,
+                                    self.feature_names)
             mlflow.sklearn.log_model(self.pipeline,
                                      self.model_step)
 
-    def _log_artifacts(self, pipeline, X, y, feature_names):
+    def _log_artifacts(self, pipeline, feature_names):
         """
         Log all relevant artifacts for the experiment
 
         Parameters:
             pipeline (sklearn.pipeline.Pipeline): The scikit-learn compatible pipeline to evaluate.
-            X (pd.DataFrame): Feature dataset.
-            y (pd.DataFrame): Target values.
             feature_names (array-like): Typically the column names of X
         """
         artifact_logger = ArtifactLogger()
-        pipeline.fit(X, y)
-        y_pred, y_scores = pipeline.predict(X), pipeline.predict_proba(X)
+        pipeline.fit(self.X_train, self.y_train)
+        y_pred, y_scores = pipeline.predict(self.X_test), pipeline.predict_proba(self.X_test)
 
         if is_classifier(pipeline):
             # Log ROC curve
-            artifact_logger.log_roc_curve(y,
+            artifact_logger.log_roc_curve(self.y_test,
                                           y_scores,
                                           pipeline.named_steps[self.model_step].classes_)
             # Log confusion matrix
-            artifact_logger.log_confusion_matrix(y,
+            artifact_logger.log_confusion_matrix(self.y_test,
                                                  y_pred)
 
             # Log precision recall curve
-            artifact_logger.log_precision_recall_curve(y,
+            artifact_logger.log_precision_recall_curve(self.y_test,
                                                        y_scores,
                                                        pipeline.named_steps[self.model_step].classes_)
 
             # Log classification report
-            artifact_logger.log_classification_report(y_pred,
+            artifact_logger.log_classification_report(self.y_test,
                                                       y_pred,
                                                       pipeline.named_steps[self.model_step].classes_)
+            # Log learning curve
+            artifact_logger.log_learning_curves(pipeline,
+                                                self.X_train,
+                                                self.y_train,
+                                                cv=5,
+                                                scoring=self.metrics[0])
 
-        # Log data sample
-        artifact_logger.log_data_sample(X,
-                                        100)  # Log 100 samples
+            # Log data sample
+            artifact_logger.log_data_sample(self.X_test,
+                                            10)  # Log 10 samples
 
         # Log feature importance
         if hasattr(pipeline.named_steps[self.model_step], 'feature_importances_'):
