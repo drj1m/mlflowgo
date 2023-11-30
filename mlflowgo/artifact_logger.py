@@ -38,7 +38,7 @@ class ArtifactLogger:
         else:
             self._log_binary_roc_curve(y_true, y_scores)
 
-    def _plot_binary_roc_curve(self, y_true, y_scores):
+    def _log_binary_roc_curve(self, y_true, y_scores):
         """
         Logs a ROC curve for a binary classifier as an MLflow artifact.
 
