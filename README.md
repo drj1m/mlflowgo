@@ -25,8 +25,8 @@ We can leverage mlflowgo with:
 ``` python
 mlflow_go = MLFlowGo(experiment_name="Iris_Classification_Experiment")
 
-mlflow_go.run_experiment(model,
-                         data.drop(columns=['target']),
-                         data['target'])
+mlflow_go.run_experiment(pipeline=model,
+                         X=data.drop(columns=['target']),
+                         y=data['target'])
 ```
 
