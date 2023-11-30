@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import (
     roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay,
-    precision_recall_curve, average_precision_score)
+    precision_recall_curve, average_precision_score,
+    classification_report)
 import numpy as np
 import pandas as pd
 import os
@@ -30,7 +31,7 @@ class ArtifactLogger:
 
         y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
                 or binary decisions.
-        
+
         feature_names (list): List of feature names.
         """
         if len(np.unique(y_true)) > 2:
@@ -173,7 +174,7 @@ class ArtifactLogger:
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'precision_recall_curve.png')
+            mlflow.log_artifact(tmp.name, 'Precision Recall Curve')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -237,4 +238,31 @@ class ArtifactLogger:
         with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
             sample.to_csv(tmp.name, index=False)
             mlflow.log_artifact(tmp.name, 'Data Sample')
+        os.remove(tmp.name)
+
+    def log_classification_report(self, y_true, y_pred, class_names):
+        """
+        Logs a classification report as an MLflow artifact.
+
+        Parameters:
+        y_true (array-like): True labels of the data.
+
+        y_pred (array-like): Predicted labels of the data.
+
+        class_names (list): List of class names corresponding to the labels.
+        """
+        if not isinstance(class_names[0], str):
+            class_names = [str(i) for i in class_names]
+        # Generate the classification report
+        report = classification_report(y_true, y_pred, target_names=class_names)
+
+        # Create a temporary file to save the report
+        with tempfile.NamedTemporaryFile(mode='w', suffix=".txt", delete=False) as tmp:
+            tmp.write(report)
+            tmp.flush()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Classification Report')
+
+        # Remove the temporary file
         os.remove(tmp.name)

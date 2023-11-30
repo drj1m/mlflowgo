@@ -104,6 +104,11 @@ class MLFlowGo(Base):
                                                        y_scores,
                                                        pipeline.named_steps[self.model_step].classes_)
 
+            # Log classification report
+            artifact_logger.log_classification_report(y_pred,
+                                                      y_pred,
+                                                      pipeline.named_steps[self.model_step].classes_)
+
         # Log data sample
         artifact_logger.log_data_sample(X,
                                         100)  # Log 100 samples
