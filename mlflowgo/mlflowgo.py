@@ -67,16 +67,19 @@ class MLFlowGo(Base):
 
         with mlflow.start_run(run_name=self.get_run_name(self.pipeline)):
             # Perform cross-validation
-            cv_results = [cross_val_score(
-                self.pipeline,
-                self.X_train,
-                self.y_train,
-                cv=cv,
-                scoring=m) for m in self.metrics]
+            if cv != -1:
+                cv_results = [cross_val_score(
+                    self.pipeline,
+                    self.X_train,
+                    self.y_train,
+                    cv=cv,
+                    scoring=m) for m in self.metrics]
+            else:
+                cv_results = None
 
             # Log parameters, metrics, and model
             self._log_params(self.pipeline)
-            self._log_metrics(cv_results, self.metrics)
+            if cv_results is not None: self._log_metrics(cv_results, self.metrics)
             self._log_artifacts(self.pipeline,
                                 self.feature_names)
             mlflow.sklearn.log_model(self.pipeline,
@@ -113,21 +116,6 @@ class MLFlowGo(Base):
             artifact_logger.log_classification_report(self.y_test,
                                                       y_pred,
                                                       pipeline.named_steps[self.model_step].classes_)
-            # Log learning curve
-            artifact_logger.log_learning_curves(pipeline,
-                                                self.X_train,
-                                                self.y_train,
-                                                cv=5,
-                                                scoring=self.metrics[0])
-
-            # Log validation curve
-            artifact_logger.log_validation_curve(pipeline,
-                                                 self.X_train,
-                                                 self.y_train,
-                                                 param_name=f'{self.model_step}__n_estimators',
-                                                 param_range=[50, 100, 200, 500],
-                                                 cv=5,
-                                                 scoring=self.metrics[0])
 
             # Log calibration plot
             artifact_logger.log_calibration_plot(pipeline,
@@ -137,6 +125,22 @@ class MLFlowGo(Base):
         # Log data sample
         artifact_logger.log_data_sample(self.X_test,
                                         10)  # Log 10 samples
+
+        # Log learning curve
+        artifact_logger.log_learning_curves(pipeline,
+                                            self.X_train,
+                                            self.y_train,
+                                            cv=5,
+                                            scoring=self.metrics[0])
+
+        # Log validation curve
+        artifact_logger.log_validation_curve(pipeline,
+                                             self.X_train,
+                                             self.y_train,
+                                             param_name=f'{self.model_step}__n_estimators',
+                                             param_range=[50, 100, 200, 500],
+                                             cv=5,
+                                             scoring=self.metrics[0])
 
         # Log feature importance
         if hasattr(pipeline.named_steps[self.model_step], 'feature_importances_'):
