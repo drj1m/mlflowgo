@@ -129,6 +129,11 @@ class MLFlowGo(Base):
                                                  cv=5,
                                                  scoring=self.metrics[0])
 
+            # Log calibration plot
+            artifact_logger.log_calibration_plot(pipeline,
+                                                 self.X_test,
+                                                 self.y_test)
+
             # Log data sample
             artifact_logger.log_data_sample(self.X_test,
                                             10)  # Log 10 samples

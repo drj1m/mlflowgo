@@ -6,6 +6,7 @@ from sklearn.metrics import (
     precision_recall_curve, average_precision_score,
     classification_report)
 from sklearn.model_selection import learning_curve, validation_curve
+from sklearn.calibration import calibration_curve
 import numpy as np
 import pandas as pd
 import os
@@ -125,6 +126,99 @@ class ArtifactLogger:
 
             # Log the temporary file as an artifact
             mlflow.log_artifact(tmp.name, 'Validation Curve')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_calibration_plot(self, pipeline, X, y, n_bins=10, strategy='uniform'):
+        """
+        Determine which function to call to produce a calibration plot.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        n_bins(int default=10): The number of bins to use for calibration.
+        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        """
+        if len(np.unique(y)) > 2:
+            self._log_calibration_plot_one_vs_rest(pipeline, X, y, n_bins=10, strategy='uniform')
+        else:
+            self._log_binary_calibration_plot(pipeline, X, y, n_bins=10, strategy='uniform')
+
+    def _log_calibration_plot_one_vs_rest(self, pipeline, X, y, n_bins=10, strategy='uniform'):
+        """
+        Generates and logs a one-vs-rest calibration plot as an MLflow artifact for multi-class data.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        n_bins(int default=10): The number of bins to use for calibration.
+        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        """
+        classes = np.unique(y)
+        plt.figure(figsize=(8, 6))
+
+        y_proba = pipeline.predict_proba(X)
+        
+        for idx, cls in enumerate(classes):
+            y_class = (y == cls).astype(int)  # One-vs-rest for current class
+            class_proba = y_proba[:, idx]
+
+            prob_true, prob_pred = calibration_curve(y_class, class_proba, n_bins=n_bins, strategy=strategy)
+            plt.plot(prob_pred, prob_true, marker='o', linewidth=1, label=f'Class {cls}')
+
+        plt.plot([0, 1], [0, 1], linestyle='--', label='Perfectly calibrated')
+        plt.xlabel('Predicted probability')
+        plt.ylabel('True probability in each bin')
+        plt.legend()
+        plt.title('One-vs-Rest Calibration Plot')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Calibration plot')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def _log_binary_calibration_plot(self, pipeline, X, y, n_bins=10, strategy='uniform'):
+        """
+        Generates and logs a calibration plot as an MLflow artifact.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        n_bins(int default=10): The number of bins to use for calibration.
+        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        """
+        # Predict probabilities
+        y_proba = pipeline.predict_proba(X)[:, 1]
+
+        # Calibration curve
+        prob_true, prob_pred = calibration_curve(y, y_proba, n_bins=n_bins, strategy=strategy)
+
+        # Plot calibration curve
+        plt.figure(figsize=(8, 6))
+        plt.plot(prob_pred, prob_true, marker='o', linewidth=1, label='Calibration plot')
+        plt.plot([0, 1], [0, 1], linestyle='--', label='Perfectly calibrated')
+        plt.xlabel('Predicted probability')
+        plt.ylabel('True probability in each bin')
+        plt.legend()
+        plt.title('Calibration Plot')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Calibration plot')
 
         # Remove the temporary file
         os.remove(tmp.name)
