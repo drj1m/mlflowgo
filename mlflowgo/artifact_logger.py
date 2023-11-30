@@ -501,3 +501,34 @@ class ArtifactLogger:
 
         # Remove the temporary file
         os.remove(tmp.name)
+
+    def log_prediction_vs_actual_plot(self, pipeline, X, y):
+        """
+        Generates and logs a prediction vs. actual plot as an MLflow artifact.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        """
+        # Predict the values using the model
+        y_pred = pipeline.predict(X)
+
+        # Plotting prediction vs actual values
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y, y_pred, color='blue', s=10)
+        plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)  # Diagonal line
+        plt.xlabel('Actual Values')
+        plt.ylabel('Predicted Values')
+        plt.title('Prediction vs. Actual')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Prediction vs Actual')
+
+        # Remove the temporary file
+        os.remove(tmp.name)

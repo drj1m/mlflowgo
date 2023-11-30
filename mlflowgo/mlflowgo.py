@@ -126,6 +126,10 @@ class MLFlowGo(Base):
             artifact_logger.log_residual_plot(pipeline,
                                               self.X_test,
                                               self.y_test)
+            # Log predicted vs actual plot
+            artifact_logger.log_prediction_vs_actual_plot(pipeline,
+                                                          self.X_test,
+                                                          self.y_test)
 
         # Log data sample
         artifact_logger.log_data_sample(self.X_test,
