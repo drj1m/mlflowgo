@@ -467,3 +467,37 @@ class ArtifactLogger:
 
         # Remove the temporary file
         os.remove(tmp.name)
+
+    def log_residual_plot(self, pipeline, X, y):
+        """
+        Generates and logs a residual plot as an MLflow artifact.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        """
+        # Predict the values using the model
+        y_pred = pipeline.predict(X)
+
+        # Calculate residuals
+        residuals = y - y_pred
+
+        # Plotting the residuals
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_pred, residuals, color='blue', s=10)
+        plt.axhline(y=0, color='black', linestyle='--')
+        plt.xlabel('Predicted Values')
+        plt.ylabel('Residuals')
+        plt.title('Residual Plot')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Residual plot')
+
+        # Remove the temporary file
+        os.remove(tmp.name)

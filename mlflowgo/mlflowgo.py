@@ -1,5 +1,5 @@
 from .artifact_logger import ArtifactLogger
-from . import CLASSIFIER_KEY
+from . import CLASSIFIER_KEY, REGRESSOR_KEY
 from .base import Base
 import mlflow
 import mlflow.sklearn
@@ -121,6 +121,11 @@ class MLFlowGo(Base):
             artifact_logger.log_calibration_plot(pipeline,
                                                  self.X_test,
                                                  self.y_test)
+        elif self.task_type == REGRESSOR_KEY:
+            # Log residual plot
+            artifact_logger.log_residual_plot(pipeline,
+                                              self.X_test,
+                                              self.y_test)
 
         # Log data sample
         artifact_logger.log_data_sample(self.X_test,
