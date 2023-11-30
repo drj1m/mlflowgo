@@ -532,3 +532,40 @@ class ArtifactLogger:
 
         # Remove the temporary file
         os.remove(tmp.name)
+
+    def log_coefficient_plot(self, pipeline, model_step, feature_names):
+        """
+        Generates and logs a coefficient plot as an MLflow artifact for linear regression models
+        or others with a 'coef_' attribute.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        model_step (str): Step name for the model
+        feature_names (list): A list of names for the features corresponding to the coefficients.
+        """
+        # Ensure the model has the attribute 'coef_'
+        if not hasattr(pipeline.named_steps[model_step], 'coef_'):
+            raise ValueError("The provided estimator does not have 'coef_' attribute.")
+
+        # Ensure the number of feature names matches the number of coefficients
+        if len(feature_names) != len(pipeline.named_steps[model_step].coef_):
+            raise ValueError("The number of feature names must match the number of coefficients.")
+
+        # Plotting the coefficients
+        plt.figure(figsize=(10, 6))
+        plt.bar(feature_names, pipeline.named_steps[model_step].coef_)
+        plt.xlabel('Features')
+        plt.ylabel('Coefficient Value')
+        plt.xticks(rotation=45, ha='right')
+        plt.title('Feature Coefficients')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Coefficient Plot')
+
+        # Remove the temporary file
+        os.remove(tmp.name)

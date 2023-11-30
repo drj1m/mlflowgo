@@ -61,6 +61,9 @@ class MLFlowGo(Base):
             kwargs.get('feature_names', None),
             X.columns
         )
+        self.param_name = kwargs.get('param_name', None)
+        self.param_range = kwargs.get('param_range', None)
+
         self.model_step = self.get_model_step_from_pipeline(self.pipeline)
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=0.33)
@@ -126,10 +129,17 @@ class MLFlowGo(Base):
             artifact_logger.log_residual_plot(pipeline,
                                               self.X_test,
                                               self.y_test)
+
             # Log predicted vs actual plot
             artifact_logger.log_prediction_vs_actual_plot(pipeline,
                                                           self.X_test,
                                                           self.y_test)
+
+            # Log coefficient plot
+            if hasattr(pipeline.named_steps[self.model_step], 'coef_'):
+                artifact_logger.log_coefficient_plot(pipeline,
+                                                     self.model_step,
+                                                     self.feature_names)
 
         # Log data sample
         artifact_logger.log_data_sample(self.X_test,
@@ -143,13 +153,14 @@ class MLFlowGo(Base):
                                             scoring=self.metrics[0])
 
         # Log validation curve
-        artifact_logger.log_validation_curve(pipeline,
-                                             self.X_train,
-                                             self.y_train,
-                                             param_name=f'{self.model_step}__n_estimators',
-                                             param_range=[50, 100, 200, 500],
-                                             cv=5,
-                                             scoring=self.metrics[0])
+        if self.param_name is not None and self.param_range is not None:
+            artifact_logger.log_validation_curve(pipeline,
+                                                 self.X_train,
+                                                 self.y_train,
+                                                 param_name=f'{self.model_step}__n_estimators',
+                                                 param_range=[50, 100, 200, 500],
+                                                 cv=5,
+                                                 scoring=self.metrics[0])
 
         # Log feature importance
         if hasattr(pipeline.named_steps[self.model_step], 'feature_importances_'):
