@@ -4,6 +4,7 @@ from .base import Base
 import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.base import is_classifier
 import subprocess
@@ -12,6 +13,7 @@ import webbrowser
 import requests
 import time
 import pandas as pd
+import numpy as np
 
 
 class MLFlowGo(Base):
@@ -158,6 +160,13 @@ class MLFlowGo(Base):
                                                     self.X_test,
                                                     self.y_test)
 
+            # Log exeriment summary
+            self._generate_regression_experiment_summary(pipeline,
+                                                         self.X_train,
+                                                         self.y_train,
+                                                         self.X_test,
+                                                         self.y_test)
+
         # Log data sample
         artifact_logger.log_data_sample(self.X_test,
                                         10)  # Log 10 samples
@@ -203,6 +212,84 @@ class MLFlowGo(Base):
         for idx, metric in enumerate(metrics):
             mlflow.log_metric(f"mean_{metric}", cv_results[idx].mean())
             mlflow.log_metric(f"std_{metric}", cv_results[idx].std())
+
+    def _generate_regression_experiment_summary(self, pipeline, X_train, y_train, X_test, y_test, objective='', dataset_desc=''):
+        """
+        Generates and updates an MLflow experiment summary based on a training pipeline.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        X_train, y_train (pd.DataFrame): Training dataset (features and target).
+        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        objective (str): The objective of the experiment.
+        dataset_desc (str): Description of the dataset used.
+        """
+        def analyze_results(performance_metrics):
+            """
+            Analyze performance metrics to generate key findings.
+            """
+            # Example analysis logic
+            train_rmse = performance_metrics['Train RMSE']
+            test_rmse = performance_metrics['Test RMSE']
+            if test_rmse > train_rmse * 1.2:
+                return "Model may be overfitting as test RMSE is significantly higher than train RMSE."
+            elif test_rmse < train_rmse:
+                return "Model performs better on test set, which is unusual and may suggest data leakage or overfitting."
+            else:
+                return "Model generalizes well from training to test data."
+
+        def generate_conclusions(performance_metrics):
+            """
+            Generate dynamic conclusions based on performance metrics.
+            """
+            # Example logic for conclusion
+            test_r2 = performance_metrics['Test R2']
+            if test_r2 > 0.8:
+                return "Model shows high predictive accuracy on test data. Further tuning may focus on feature selection."
+            elif test_r2 < 0.5:
+                return "Model underperforms on test data. Consider revising model complexity or feature engineering."
+            else:
+                return "Model shows moderate performance. Further improvements can be made in model tuning."
+
+        # Extract model type and hyperparameters
+        model_step = pipeline.steps[-1][1]  # Assuming the model is the last step in the pipeline
+        model_type = type(model_step).__name__
+        hyperparameters = model_step.get_params()
+
+        # Train the model and predict
+        pipeline.fit(X_train, y_train)
+        y_pred_train = pipeline.predict(X_train)
+        y_pred_test = pipeline.predict(X_test)
+
+        # Calculate performance metrics
+        performance_metrics = {
+            'Train RMSE': np.sqrt(mean_squared_error(y_train, y_pred_train)),
+            'Test RMSE': np.sqrt(mean_squared_error(y_test, y_pred_test)),
+            'Train R2': r2_score(y_train, y_pred_train),
+            'Test R2': r2_score(y_test, y_pred_test)
+        }
+
+        # Analyze results for key findings
+        key_findings = analyze_results(performance_metrics)
+
+        # Generate dynamic conclusions based on metrics
+        conclusions = generate_conclusions(performance_metrics)
+
+        # Construct summary
+        hyperparameters_str = ', '.join([f'{k}: {v}' for k, v in hyperparameters.items()])
+        performance_metrics_str = ', '.join([f'{k}: {v:.3f}' for k, v in performance_metrics.items()])
+
+        description = (
+            f"**Experiment Overview:**\n- Objective: {objective}\n- Model Type: {model_type}\n\n"
+            f"**Hyperparameters:**\n- {hyperparameters_str}\n\n"
+            f"**Data Summary:**\n- Dataset: {dataset_desc}\n\n"
+            f"**Performance Metrics:**\n- {performance_metrics_str}\n\n"
+            f"**Key Findings:**\n- {key_findings}\n\n"
+            f"**Conclusions:**\n- {conclusions}"
+        )
+
+        # Update the MLflow experiment's description
+        mlflow.set_tag("mlflow.note.content", description)
 
     def run_mlflow_ui(self, port=5000, open_browser=True):
         """
