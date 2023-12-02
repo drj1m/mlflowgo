@@ -1,11 +1,12 @@
-from .artifact_logger import ArtifactLogger
-from . import CLASSIFIER_KEY
+from .artifact_base import ArtifactBase
+from .regressor import Regressor
+from .classifier import Classifier
+from . import CLASSIFIER_KEY, REGRESSOR_KEY
 from .base import Base
 import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.base import is_classifier
 import subprocess
 import threading
 import webbrowser
@@ -61,107 +62,76 @@ class MLFlowGo(Base):
             kwargs.get('feature_names', None),
             X.columns
         )
+        self.param_name = kwargs.get('param_name', None)
+        self.param_range = kwargs.get('param_range', None)
+        self.objective = kwargs.get('objective', None)
+        self.dataset_desc = kwargs.get('dataset_desc', None)
+
         self.model_step = self.get_model_step_from_pipeline(self.pipeline)
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=0.33)
 
         with mlflow.start_run(run_name=self.get_run_name(self.pipeline)):
             # Perform cross-validation
-            cv_results = cross_val_score(
-                self.pipeline,
-                self.X_train,
-                self.y_train,
-                cv=cv,
-                scoring=self.metrics[0])
+            if cv != -1:
+                cv_results = [cross_val_score(
+                    self.pipeline,
+                    self.X_train,
+                    self.y_train,
+                    cv=cv,
+                    scoring=m) for m in self.metrics]
+            else:
+                cv_results = None
 
             # Log parameters, metrics, and model
-            self._log_params(self.pipeline)
-            self._log_metrics(cv_results, self.metrics)
-            if self.task_type == CLASSIFIER_KEY:
-                self._log_artifacts(self.pipeline,
-                                    self.feature_names)
+            self._log_params()
+            if cv_results is not None: self._log_metrics(cv_results, self.metrics)
+            self._log_artifacts()
             mlflow.sklearn.log_model(self.pipeline,
                                      self.model_step)
 
-    def _log_artifacts(self, pipeline, feature_names):
+    def _log_artifacts(self):
         """
         Log all relevant artifacts for the experiment
-
-        Parameters:
-            pipeline (sklearn.pipeline.Pipeline): The scikit-learn compatible pipeline to evaluate.
-            feature_names (array-like): Typically the column names of X
         """
-        artifact_logger = ArtifactLogger()
-        pipeline.fit(self.X_train, self.y_train)
-        y_pred, y_scores = pipeline.predict(self.X_test), pipeline.predict_proba(self.X_test)
 
-        if is_classifier(pipeline):
-            # Log ROC curve
-            artifact_logger.log_roc_curve(self.y_test,
-                                          y_scores,
-                                          pipeline.named_steps[self.model_step].classes_)
-            # Log confusion matrix
-            artifact_logger.log_confusion_matrix(self.y_test,
-                                                 y_pred)
+        base = ArtifactBase(
+            pipeline=self.pipeline.fit(self.X_train, self.y_train),
+            X_train=self.X_train,
+            X_test=self.X_test,
+            y_train=self.y_train,
+            y_test=self.y_test,
+            model_step=self.model_step,
+            feature_names=self.feature_names,
+            metric=self.metrics[0],
+            param_name=self.param_name,
+            param_range=self.param_range,
+            objective=self.objective,
+            dataset_desc=self.dataset_desc
+        )
 
-            # Log precision recall curve
-            artifact_logger.log_precision_recall_curve(self.y_test,
-                                                       y_scores,
-                                                       pipeline.named_steps[self.model_step].classes_)
+        if self.task_type == REGRESSOR_KEY:
+            artifact_logger = Regressor(base)
+        elif self.task_type == CLASSIFIER_KEY:
+            artifact_logger = Classifier(base)
 
-            # Log classification report
-            artifact_logger.log_classification_report(self.y_test,
-                                                      y_pred,
-                                                      pipeline.named_steps[self.model_step].classes_)
-            # Log learning curve
-            artifact_logger.log_learning_curves(pipeline,
-                                                self.X_train,
-                                                self.y_train,
-                                                cv=5,
-                                                scoring=self.metrics[0])
+        artifact_logger.log()
 
-            # Log validation curve
-            artifact_logger.log_validation_curve(pipeline,
-                                                 self.X_train,
-                                                 self.y_train,
-                                                 param_name=f'{self.model_step}__n_estimators',
-                                                 param_range=[50, 100, 200, 500],
-                                                 cv=5,
-                                                 scoring=self.metrics[0])
-
-            # Log calibration plot
-            artifact_logger.log_calibration_plot(pipeline,
-                                                 self.X_test,
-                                                 self.y_test)
-
-            # Log data sample
-            artifact_logger.log_data_sample(self.X_test,
-                                            10)  # Log 10 samples
-
-        # Log feature importance
-        if hasattr(pipeline.named_steps[self.model_step], 'feature_importances_'):
-            artifact_logger.log_feature_importance(pipeline,
-                                                   self.model_step,
-                                                   feature_names)
-
-    def _log_params(self, pipeline):
+    def _log_params(self):
         """
         Logs the parameters of the model or pipeline.
-
-        Parameters:
-            pipeline (sklearn.pipeline.Pipeline): The scikit-learn compatible pipeline to evaluate.
         """
-        if isinstance(pipeline, Pipeline):
-            params = pipeline.get_params()
+        if isinstance(self.pipeline, Pipeline):
+            params = self.pipeline.get_params()
         else:
-            params = pipeline.__dict__
+            params = self.pipeline.__dict__
         mlflow.log_params(params)
 
     def _log_metrics(self, cv_results, metrics):
         """Logs the metrics from cross-validation results."""
-        for metric in metrics:
-            mlflow.log_metric(f"mean_{metric}", cv_results.mean())
-            mlflow.log_metric(f"std_{metric}", cv_results.std())
+        for idx, metric in enumerate(metrics):
+            mlflow.log_metric(f"mean_{metric}", cv_results[idx].mean())
+            mlflow.log_metric(f"std_{metric}", cv_results[idx].std())
 
     def run_mlflow_ui(self, port=5000, open_browser=True):
         """

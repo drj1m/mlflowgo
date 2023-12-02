@@ -4,9 +4,10 @@ from sklearn.preprocessing import label_binarize
 from sklearn.metrics import (
     roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay,
     precision_recall_curve, average_precision_score,
-    classification_report)
+    classification_report, mean_squared_error, mean_absolute_error, r2_score)
 from sklearn.model_selection import learning_curve, validation_curve
 from sklearn.calibration import calibration_curve
+import scipy.stats as stats
 import numpy as np
 import pandas as pd
 import os
@@ -467,3 +468,191 @@ class ArtifactLogger:
 
         # Remove the temporary file
         os.remove(tmp.name)
+
+    def log_residual_plot(self, pipeline, X, y):
+        """
+        Generates and logs a residual plot as an MLflow artifact.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        """
+        # Predict the values using the model
+        y_pred = pipeline.predict(X)
+
+        # Calculate residuals
+        residuals = y - y_pred
+
+        # Plotting the residuals
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_pred, residuals, color='blue', s=10)
+        plt.axhline(y=0, color='black', linestyle='--')
+        plt.xlabel('Predicted Values')
+        plt.ylabel('Residuals')
+        plt.title('Residual Plot')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Residual plot')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_prediction_vs_actual_plot(self, pipeline, X, y):
+        """
+        Generates and logs a prediction vs. actual plot as an MLflow artifact.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        X (pd.DataFrame): Feature dataset.
+        y (pd.DataFrame): Target values.
+        """
+        # Predict the values using the model
+        y_pred = pipeline.predict(X)
+
+        # Plotting prediction vs actual values
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y, y_pred, color='blue', s=10)
+        plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)  # Diagonal line
+        plt.xlabel('Actual Values')
+        plt.ylabel('Predicted Values')
+        plt.title('Prediction vs. Actual')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Prediction vs Actual')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_coefficient_plot(self, pipeline, model_step, feature_names):
+        """
+        Generates and logs a coefficient plot as an MLflow artifact for linear regression models
+        or others with a 'coef_' attribute.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        model_step (str): Step name for the model
+        feature_names (list): A list of names for the features corresponding to the coefficients.
+        """
+        # Ensure the model has the attribute 'coef_'
+        if not hasattr(pipeline.named_steps[model_step], 'coef_'):
+            raise ValueError("The provided estimator does not have 'coef_' attribute.")
+
+        # Ensure the number of feature names matches the number of coefficients
+        if len(feature_names) != len(pipeline.named_steps[model_step].coef_):
+            raise ValueError("The number of feature names must match the number of coefficients.")
+
+        # Plotting the coefficients
+        plt.figure(figsize=(10, 6))
+        plt.bar(feature_names, pipeline.named_steps[model_step].coef_)
+        plt.xlabel('Features')
+        plt.ylabel('Coefficient Value')
+        plt.xticks(rotation=45, ha='right')
+        plt.title('Feature Coefficients')
+
+        # Save the plot to a temporary file and log it
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Coefficient Plot')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_regression_report(self, pipeline, X_train, y_train, X_test, y_test):
+        """
+        Generates and logs a model summary as an MLflow artifact for regression models.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        X_train, y_train (pd.DataFrame): Training dataset (features and target).
+        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        """
+        # Predictions on training and test sets
+        y_train_pred = pipeline.predict(X_train)
+        y_test_pred = pipeline.predict(X_test)
+
+        # Calculate metrics
+        train_mse = mean_squared_error(y_train, y_train_pred)
+        test_mse = mean_squared_error(y_test, y_test_pred)
+        train_mae = mean_absolute_error(y_train, y_train_pred)
+        test_mae = mean_absolute_error(y_test, y_test_pred)
+        train_r2 = r2_score(y_train, y_train_pred)
+        test_r2 = r2_score(y_test, y_test_pred)
+
+        # Prepare summary text
+        summary_text = (
+            f"Model Summary:\n"
+            f"Training MSE: {train_mse:.3f}\n"
+            f"Test MSE: {test_mse:.3f}\n"
+            f"Training MAE: {train_mae:.3f}\n"
+            f"Test MAE: {test_mae:.3f}\n"
+            f"Training R-squared: {train_r2:.3f}\n"
+            f"Test R-squared: {test_r2:.3f}\n"
+        )
+
+        # Save the summary to a temporary file and log it
+        with tempfile.NamedTemporaryFile(mode='w+', suffix=".txt", delete=False) as tmp:
+            tmp.write(summary_text)
+            tmp.flush()
+
+            # Log the temporary file as an artifact
+            mlflow.log_artifact(tmp.name, 'Regression Report')
+
+        # Remove the temporary file
+        os.remove(tmp.name)
+
+    def log_qq_plot(self, pipeline, X_test, y_test):
+        """
+        Generates and logs a Q-Q plot as an MLflow artifact to assess normality of residuals.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        """
+        residuals = y_test - pipeline.predict(X_test)
+        plt.figure(figsize=(8, 6))
+        stats.probplot(residuals, dist="norm", plot=plt)
+        plt.title('Q-Q Plot')
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            mlflow.log_artifact(tmp.name, 'QQ Plot')
+            os.remove(tmp.name)
+
+    def log_scale_location_plot(self, pipeline, X_test, y_test):
+        """
+        Generates and logs a scale-location plot as an MLflow artifact to check homoscedasticity.
+
+        Parameters:
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        """
+        y_pred = pipeline.predict(X_test)
+        residuals = y_test - y_pred
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_pred, np.sqrt(np.abs(residuals)), alpha=0.5)
+        plt.xlabel('Predicted values')
+        plt.ylabel('Sqrt(Absolute Residuals)')
+        plt.title('Scale-Location Plot')
+
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            plt.savefig(tmp.name)
+            plt.close()
+
+            mlflow.log_artifact(tmp.name, 'Scale Location Plot')
+            os.remove(tmp.name)
