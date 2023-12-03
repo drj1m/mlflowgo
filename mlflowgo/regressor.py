@@ -79,6 +79,10 @@ class Regressor(ArtifactLogger):
             self.log_feature_importance(self.base.pipeline,
                                         self.base.model_step,
                                         self.base.feature_names)
+            
+        # Log SHAP
+        self.log_shap_summary_plot(self.base.pipeline.named_steps[self.base.model_step],
+                                   self.base.X_train)
 
     def _generate_regression_experiment_summary(self):
         """

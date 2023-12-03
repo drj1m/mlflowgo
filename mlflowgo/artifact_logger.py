@@ -1,3 +1,4 @@
+from .artifact_base import ArtifactBase
 import mlflow
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import label_binarize
@@ -7,6 +8,7 @@ from sklearn.metrics import (
     classification_report, mean_squared_error, mean_absolute_error, r2_score)
 from sklearn.model_selection import learning_curve, validation_curve
 from sklearn.calibration import calibration_curve
+import shap
 import scipy.stats as stats
 import numpy as np
 import pandas as pd
@@ -405,6 +407,37 @@ class ArtifactLogger:
             plt.close()
             mlflow.log_artifact(tmp.name, 'Feature Importance')
         os.remove(tmp.name)
+
+    def log_shap_summary_plot(self, model, X):
+        """
+        Generates and logs a SHAP summary plot to MLflow.
+
+        Parameters:
+        model: Reference to the model.
+        X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+        """
+        explainer = ArtifactBase.get_shap_explainer(model, X)
+
+        # Calculate SHAP values
+        shap_values = explainer.shap_values(X)
+
+        # SHAP Summary Plot
+        if hasattr(model, 'classes_'):
+            for idx, _class in enumerate(model.classes_):
+                shap.summary_plot(shap_values[idx], X, show=False)
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                    plt.title(f"SHAP summary plot for class: {_class}")
+                    plt.savefig(tmp.name, bbox_inches="tight")
+                    plt.close()
+                    mlflow.log_artifact(tmp.name, "SHAP Summary plot")
+                    os.remove(tmp.name)
+        else:
+            shap.summary_plot(shap_values, X, show=False, title="SHAP summary plot")
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                plt.savefig(tmp.name, bbox_inches="tight")
+                plt.close()
+                mlflow.log_artifact(tmp.name, "SHAP Summary plot")
+                os.remove(tmp.name)
 
     def log_confusion_matrix(self, y_true, y_pred):
         """
