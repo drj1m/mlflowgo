@@ -74,6 +74,8 @@ class Classifier(ArtifactLogger):
         # Log SHAP
         self.log_shap_summary_plot(self.base.pipeline.named_steps[self.base.model_step],
                                    self.base.X_train)
+        self.log_shap_partial_dependence_plot(self.base.pipeline.named_steps[self.base.model_step],
+                                              self.base.X_train)
 
         # Log exeriment summary
         self._generate_classification_experiment_summary()

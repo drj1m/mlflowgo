@@ -429,14 +429,39 @@ class ArtifactLogger:
                     plt.title(f"SHAP summary plot for class: {_class}")
                     plt.savefig(tmp.name, bbox_inches="tight")
                     plt.close()
-                    mlflow.log_artifact(tmp.name, "SHAP Summary plot")
+                    mlflow.log_artifact(tmp.name, "SHAP")
                     os.remove(tmp.name)
         else:
             shap.summary_plot(shap_values, X, show=False, title="SHAP summary plot")
             with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
                 plt.savefig(tmp.name, bbox_inches="tight")
                 plt.close()
-                mlflow.log_artifact(tmp.name, "SHAP Summary plot")
+                mlflow.log_artifact(tmp.name, "SHAP")
+                os.remove(tmp.name)
+
+    def log_shap_partial_dependence_plot(self, model, X):
+        """
+        Generates and logs partial dependency plots for each feature to MLflow
+
+        Parameters:
+        model: Reference to the model.
+        X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+        """
+
+        for feature in X.columns:
+            shap.partial_dependence_plot(
+                feature,
+                model.predict,
+                X,
+                ice=False,
+                model_expected_value=True,
+                feature_expected_value=True,
+                show=False
+            )
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                plt.savefig(tmp.name, bbox_inches="tight")
+                plt.close()
+                mlflow.log_artifact(tmp.name, "SHAP")
                 os.remove(tmp.name)
 
     def log_confusion_matrix(self, y_true, y_pred):
