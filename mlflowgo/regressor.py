@@ -85,6 +85,8 @@ class Regressor(ArtifactLogger):
                                    self.base.X_train)
         self.log_shap_partial_dependence_plot(self.base.pipeline.named_steps[self.base.model_step],
                                               self.base.X_train)
+        self.log_regression_shap_scatter_plot(self.base.pipeline.named_steps[self.base.model_step],
+                                              self.base.X_train)
 
 
     def _generate_regression_experiment_summary(self):

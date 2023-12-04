@@ -464,6 +464,50 @@ class ArtifactLogger:
                 mlflow.log_artifact(tmp.name, "SHAP")
                 os.remove(tmp.name)
 
+    def log_regression_shap_scatter_plot(self, model, X):
+        """
+        Generates and logs scatter plots for each feature in MLflow
+
+        Parameters:
+        model: Reference to the regression model.
+        X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
+        """
+
+        explainer = ArtifactBase.get_shap_explainer(model, X)
+        if isinstance(explainer, shap.LinearExplainer):
+            # shap.plots.scatter() does not currently work for LinearExplainer objects
+            explainer = shap.Explainer(model, X)
+
+        for idx in range(X.shape[1]):
+            shap_values = explainer(X)
+            shap.plots.scatter(shap_values[:, idx], show=False)
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                plt.savefig(tmp.name, bbox_inches="tight")
+                plt.close()
+                mlflow.log_artifact(tmp.name, "SHAP")
+                os.remove(tmp.name)
+
+    def log_classification_shap_scatter_plot(self, model, X):
+        """
+        Generates and logs scatter plots for each feature in MLflow
+
+        Parameters:
+        model: Reference to the regression model.
+        X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
+        """
+
+        explainer = ArtifactBase.get_shap_explainer(model, X)
+
+        for class_idx in range(len(model.classes_)):
+            for idx in range(X.shape[1]):
+                shap_values = explainer(X)
+                shap.plots.scatter(shap_values[:, idx][:, class_idx], show=False)
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                    plt.savefig(tmp.name, bbox_inches="tight")
+                    plt.close()
+                    mlflow.log_artifact(tmp.name, f"SHAP/scatter_{X.columns.values[idx]}_class_{model.classes_[class_idx]}")
+                    os.remove(tmp.name)
+
     def log_confusion_matrix(self, y_true, y_pred):
         """
         Logs confusion matrix as an MLflow artifact.
