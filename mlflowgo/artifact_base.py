@@ -44,7 +44,7 @@ class ArtifactBase():
 
         # Models that require KernelExplainer
         elif isinstance(model, SVC):  # Add other model types if needed
-            return shap.KernelExplainer(model.predict(X), X)
+            return shap.KernelExplainer(model.predict_proba, X)
 
         else:
             # Default to Explainer for models not explicitly handled above
