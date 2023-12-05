@@ -13,6 +13,7 @@ import webbrowser
 import requests
 import time
 import pandas as pd
+import numpy as np
 
 
 class MLFlowGo(Base):
@@ -40,7 +41,7 @@ class MLFlowGo(Base):
             mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment(experiment_name)
 
-    def run_experiment(self, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, **kwargs):
+    def run_experiment(self, pipeline: Pipeline, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, **kwargs):
         """
         Runs a cross-validation experiment with the given pipeline and data, logs the metrics and model in MLFlow.
 
@@ -52,43 +53,48 @@ class MLFlowGo(Base):
             metrics (list of str, optional): Metrics to log. Defaults to ['accuracy'].
             **kwargs: Additional keyword arguments for cross_val_score function.
         """
-        self.pipeline, self.task_type = self.get_pipeline(
-            kwargs.get('pipeline', None),
-            kwargs.get('task_type', None))
-        self.metrics = self.get_model_metrics(
-            kwargs.get('metrics', None),
-            self.task_type)
-        self.feature_names = self.get_feature_names(
-            kwargs.get('feature_names', None),
-            X.columns
-        )
-        self.param_name = kwargs.get('param_name', None)
-        self.param_range = kwargs.get('param_range', None)
-        self.objective = kwargs.get('objective', None)
-        self.dataset_desc = kwargs.get('dataset_desc', None)
 
-        self.model_step = self.get_model_step_from_pipeline(self.pipeline)
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=0.33)
+        if not isinstance(pipeline, (list, tuple, np.ndarray)):
+            pipeline = [pipeline]
 
-        with mlflow.start_run(run_name=self.get_run_name(self.pipeline)):
-            # Perform cross-validation
-            if cv != -1:
-                cv_results = [cross_val_score(
-                    self.pipeline,
-                    self.X_train,
-                    self.y_train,
-                    cv=cv,
-                    scoring=m) for m in self.metrics]
-            else:
-                cv_results = None
+        for _pipeline in pipeline:
+            self.pipeline, self.task_type = self.get_pipeline(
+                _pipeline,
+                kwargs.get('task_type', None))
+            self.metrics = self.get_model_metrics(
+                kwargs.get('metrics', None),
+                self.task_type)
+            self.feature_names = self.get_feature_names(
+                kwargs.get('feature_names', None),
+                X.columns
+            )
+            self.param_name = kwargs.get('param_name', None)
+            self.param_range = kwargs.get('param_range', None)
+            self.objective = kwargs.get('objective', None)
+            self.dataset_desc = kwargs.get('dataset_desc', None)
 
-            # Log parameters, metrics, and model
-            self._log_params()
-            if cv_results is not None: self._log_metrics(cv_results, self.metrics)
-            self._log_artifacts()
-            mlflow.sklearn.log_model(self.pipeline,
-                                     self.model_step)
+            self.model_step = self.get_model_step_from_pipeline(self.pipeline)
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                X, y, test_size=0.33)
+
+            with mlflow.start_run(run_name=self.get_run_name(self.pipeline)):
+                # Perform cross-validation
+                if cv != -1:
+                    cv_results = [cross_val_score(
+                        self.pipeline,
+                        self.X_train,
+                        self.y_train,
+                        cv=cv,
+                        scoring=m) for m in self.metrics]
+                else:
+                    cv_results = None
+
+                # Log parameters, metrics, and model
+                self._log_params()
+                if cv_results is not None: self._log_metrics(cv_results, self.metrics)
+                self._log_artifacts()
+                mlflow.sklearn.log_model(self.pipeline,
+                                         self.model_step)
 
     def _log_artifacts(self):
         """
