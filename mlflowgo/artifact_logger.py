@@ -1,3 +1,4 @@
+from .artifact_base import ArtifactBase
 import mlflow
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import label_binarize
@@ -7,6 +8,7 @@ from sklearn.metrics import (
     classification_report, mean_squared_error, mean_absolute_error, r2_score)
 from sklearn.model_selection import learning_curve, validation_curve
 from sklearn.calibration import calibration_curve
+import shap
 import scipy.stats as stats
 import numpy as np
 import pandas as pd
@@ -66,12 +68,12 @@ class ArtifactLogger:
         plt.legend(loc="best")
 
         # Save the plot to a temporary file and log it
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__learning curves.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Learning Curves')
+            mlflow.log_artifact(tmp.name, 'Model Selection')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -121,12 +123,12 @@ class ArtifactLogger:
         plt.legend(loc="best")
 
         # Save the plot to a temporary file and log it
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__validation curve.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Validation Curve')
+            mlflow.log_artifact(tmp.name, 'Model Selection')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -177,12 +179,12 @@ class ArtifactLogger:
         plt.title('One-vs-Rest Calibration Plot')
 
         # Save the plot to a temporary file and log it
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__one vs rest.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Calibration plot')
+            mlflow.log_artifact(tmp.name, 'Calibration')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -219,7 +221,7 @@ class ArtifactLogger:
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Calibration plot')
+            mlflow.log_artifact(tmp.name, 'Calibration')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -259,10 +261,10 @@ class ArtifactLogger:
         plt.ylabel('True Positive Rate')
         plt.title('Receiver Operating Characteristic')
         plt.legend(loc="lower right")
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__roc.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
-            mlflow.log_artifact(tmp.name, 'ROC Curve')
+            mlflow.log_artifact(tmp.name, 'Metrics')
         os.remove(tmp.name)
 
     def _log_multi_class_roc_curve(self, y_true, y_scores, class_names):
@@ -331,10 +333,10 @@ class ArtifactLogger:
         plt.ylabel('True Positive Rate')
         plt.title('Multi-class Receiver Operating Characteristic')
         plt.legend(loc="lower right")
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__roc.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
-            mlflow.log_artifact(tmp.name, 'ROC Curve')
+            mlflow.log_artifact(tmp.name, 'Metrics')
         os.remove(tmp.name)
 
     def log_precision_recall_curve(selk, y_true, y_scores, class_names):
@@ -371,12 +373,12 @@ class ArtifactLogger:
         plt.legend(loc="lower left")
 
         # Save the plot to a temporary file and log it
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__precision_recall.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Precision Recall Curve')
+            mlflow.log_artifact(tmp.name, 'Metrics')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -400,11 +402,111 @@ class ArtifactLogger:
         plt.barh(range(len(indices)), importances[indices], align='center')
         plt.yticks(range(len(indices)), [feature_names[i] for i in indices])
         plt.xlabel('Relative Importance')
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__feature_importance.png", delete=False) as tmp:
             plt.savefig(tmp.name, bbox_inches="tight")
             plt.close()
-            mlflow.log_artifact(tmp.name, 'Feature Importance')
+            mlflow.log_artifact(tmp.name, 'Metrics')
         os.remove(tmp.name)
+
+    def log_shap_summary_plot(self, model, X):
+        """
+        Generates and logs a SHAP summary plot to MLflow.
+
+        Parameters:
+        model: Reference to the model.
+        X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+        """
+        explainer = ArtifactBase.get_shap_explainer(model, X)
+
+        # Calculate SHAP values
+        shap_values = explainer.shap_values(X)
+
+        # SHAP Summary Plot
+        if hasattr(model, 'classes_'):
+            for idx, _class in enumerate(model.classes_):
+                shap.summary_plot(shap_values[idx], X, show=False)
+                with tempfile.NamedTemporaryFile(suffix=f"__class {_class}.png", delete=False) as tmp:
+                    plt.title(f"SHAP summary plot for class: {_class}")
+                    plt.savefig(tmp.name, bbox_inches="tight")
+                    plt.close()
+                    mlflow.log_artifact(tmp.name, "SHAP/Summary Plot")
+                    os.remove(tmp.name)
+        else:
+            shap.summary_plot(shap_values, X, show=False, title="SHAP summary plot")
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                plt.savefig(tmp.name, bbox_inches="tight")
+                plt.close()
+                mlflow.log_artifact(tmp.name, "SHAP/Summary Plot")
+                os.remove(tmp.name)
+
+    def log_shap_partial_dependence_plot(self, model, X):
+        """
+        Generates and logs partial dependency plots for each feature to MLflow
+
+        Parameters:
+        model: Reference to the model.
+        X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+        """
+
+        for feature in X.columns:
+            shap.partial_dependence_plot(
+                feature,
+                model.predict,
+                X,
+                ice=False,
+                model_expected_value=True,
+                feature_expected_value=True,
+                show=False
+            )
+            with tempfile.NamedTemporaryFile(suffix=f"__{feature}.png", delete=False) as tmp:
+                plt.savefig(tmp.name, bbox_inches="tight")
+                plt.close()
+                mlflow.log_artifact(tmp.name, "SHAP/Partial Dependence Plot")
+                os.remove(tmp.name)
+
+    def log_regression_shap_scatter_plot(self, model, X):
+        """
+        Generates and logs scatter plots for each feature in MLflow
+
+        Parameters:
+        model: Reference to the regression model.
+        X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
+        """
+
+        explainer = ArtifactBase.get_shap_explainer(model, X)
+        if isinstance(explainer, shap.LinearExplainer):
+            # shap.plots.scatter() does not currently work for LinearExplainer objects
+            explainer = shap.Explainer(model, X)
+
+        for idx in range(X.shape[1]):
+            shap_values = explainer(X)
+            shap.plots.scatter(shap_values[:, idx], show=False)
+            with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}.png", delete=False) as tmp:
+                plt.savefig(tmp.name, bbox_inches="tight")
+                plt.close()
+                mlflow.log_artifact(tmp.name, "SHAP/Scatter Plot")
+                os.remove(tmp.name)
+
+    def log_classification_shap_scatter_plot(self, model, X):
+        """
+        Generates and logs scatter plots for each feature in MLflow
+
+        Parameters:
+        model: Reference to the regression model.
+        X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
+        """
+
+        explainer = ArtifactBase.get_shap_explainer(model, X)
+
+        for class_idx in range(len(model.classes_)):
+            for idx in range(X.shape[1]):
+                shap_values = explainer(X)
+                shap.plots.scatter(shap_values[:, idx][:, class_idx], show=False)
+                with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}_class {model.classes_[class_idx]}.png", delete=False) as tmp:
+                    plt.savefig(tmp.name, bbox_inches="tight")
+                    plt.close()
+                    mlflow.log_artifact(tmp.name, f"SHAP/Scatter Plot")
+                    os.remove(tmp.name)
 
     def log_confusion_matrix(self, y_true, y_pred):
         """
@@ -421,10 +523,10 @@ class ArtifactLogger:
         disp.plot(ax=ax, cmap=plt.cm.Blues)
         plt.title("Confusion Matrix")
         plt.grid(False)
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__confusion_matrix.png", delete=False) as tmp:
             plt.savefig(tmp.name, bbox_inches="tight")
             plt.close()
-            mlflow.log_artifact(tmp.name, 'Confusion Matrix')
+            mlflow.log_artifact(tmp.name, 'Metrics')
         os.remove(tmp.name)
 
     def log_data_sample(self, data, sample_size):
@@ -459,12 +561,12 @@ class ArtifactLogger:
         report = classification_report(y_true, y_pred, target_names=class_names)
 
         # Create a temporary file to save the report
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".txt", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode='w', suffix="__classification_report.txt", delete=False) as tmp:
             tmp.write(report)
             tmp.flush()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Classification Report')
+            mlflow.log_artifact(tmp.name, 'Metrics')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -493,12 +595,12 @@ class ArtifactLogger:
         plt.title('Residual Plot')
 
         # Save the plot to a temporary file and log it
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__residual.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Residual plot')
+            mlflow.log_artifact(tmp.name, 'Metrics')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -524,12 +626,12 @@ class ArtifactLogger:
         plt.title('Prediction vs. Actual')
 
         # Save the plot to a temporary file and log it
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__prediction vs actual.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Prediction vs Actual')
+            mlflow.log_artifact(tmp.name, 'Metrics')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -561,12 +663,12 @@ class ArtifactLogger:
         plt.title('Feature Coefficients')
 
         # Save the plot to a temporary file and log it
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__coefficient.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Coefficient Plot')
+            mlflow.log_artifact(tmp.name, 'Metrics')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -604,12 +706,12 @@ class ArtifactLogger:
         )
 
         # Save the summary to a temporary file and log it
-        with tempfile.NamedTemporaryFile(mode='w+', suffix=".txt", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(mode='w+', suffix="__regression report.txt", delete=False) as tmp:
             tmp.write(summary_text)
             tmp.flush()
 
             # Log the temporary file as an artifact
-            mlflow.log_artifact(tmp.name, 'Regression Report')
+            mlflow.log_artifact(tmp.name, 'Metrics')
 
         # Remove the temporary file
         os.remove(tmp.name)
@@ -627,11 +729,11 @@ class ArtifactLogger:
         stats.probplot(residuals, dist="norm", plot=plt)
         plt.title('Q-Q Plot')
 
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__qq.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
-            mlflow.log_artifact(tmp.name, 'QQ Plot')
+            mlflow.log_artifact(tmp.name, 'Metrics')
             os.remove(tmp.name)
 
     def log_scale_location_plot(self, pipeline, X_test, y_test):
@@ -650,9 +752,9 @@ class ArtifactLogger:
         plt.ylabel('Sqrt(Absolute Residuals)')
         plt.title('Scale-Location Plot')
 
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix="__scale_location.png", delete=False) as tmp:
             plt.savefig(tmp.name)
             plt.close()
 
-            mlflow.log_artifact(tmp.name, 'Scale Location Plot')
+            mlflow.log_artifact(tmp.name, 'Metrics')
             os.remove(tmp.name)
