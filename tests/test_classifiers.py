@@ -193,9 +193,9 @@ def test_quadratic_discriminant_analysis_pipeline():
     pipeline = Pipeline([
         ('QDA', QuadraticDiscriminantAnalysis())
     ])
-    mlflow_go = MLFlowGo(experiment_name="qda_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['classification_test']),
+                             X=data.drop(columns=['target']),
                              y=data['target'],
                              cv=-1)
 
