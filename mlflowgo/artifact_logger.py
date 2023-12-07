@@ -253,7 +253,7 @@ class ArtifactLogger:
         y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
                 or binary decisions.
         """
-        fpr, tpr, _ = roc_curve(y_true, y_scores)
+        fpr, tpr, _ = roc_curve(y_true, y_scores[:, 1])
         roc_auc = auc(fpr, tpr)
         plt.figure()
         plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
@@ -422,7 +422,7 @@ class ArtifactLogger:
         shap_values = explainer.shap_values(X)
 
         # SHAP Summary Plot
-        if hasattr(model, 'classes_'):
+        if hasattr(model, 'classes_') and len(shap_values) == len(model.classes_):
             for idx, _class in enumerate(model.classes_):
                 shap.summary_plot(shap_values[idx], X, show=False)
                 with tempfile.NamedTemporaryFile(suffix=f"__class {_class}.png", delete=False) as tmp:
@@ -501,12 +501,20 @@ class ArtifactLogger:
         for class_idx in range(len(model.classes_)):
             for idx in range(X.shape[1]):
                 shap_values = explainer(X)
-                shap.plots.scatter(shap_values[:, idx][:, class_idx], show=False)
-                with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}_class {model.classes_[class_idx]}.png", delete=False) as tmp:
-                    plt.savefig(tmp.name, bbox_inches="tight")
-                    plt.close()
-                    mlflow.log_artifact(tmp.name, f"SHAP/Scatter Plot")
-                    os.remove(tmp.name)
+                try:
+                    shap.plots.scatter(shap_values[:, idx][:, class_idx], show=False)
+                    with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}_class {model.classes_[class_idx]}.png", delete=False) as tmp:
+                        plt.savefig(tmp.name, bbox_inches="tight")
+                        plt.close()
+                        mlflow.log_artifact(tmp.name, f"SHAP/Scatter Plot")
+                        os.remove(tmp.name)
+                except IndexError:
+                    shap.plots.scatter(shap_values[:, idx], show=False)
+                    with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}.png", delete=False) as tmp:
+                        plt.savefig(tmp.name, bbox_inches="tight")
+                        plt.close()
+                        mlflow.log_artifact(tmp.name, f"SHAP/Scatter Plot")
+                        os.remove(tmp.name)
 
     def log_confusion_matrix(self, y_true, y_pred):
         """
