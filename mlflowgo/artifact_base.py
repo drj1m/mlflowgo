@@ -2,7 +2,8 @@ import shap
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
-    LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression)
+    LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
+    SGDRegressor)
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -45,7 +46,7 @@ class ArtifactBase():
                         (LogisticRegression, LinearRegression, Ridge,
                          Lasso, ElasticNet, Lars, LassoLars,
                          OrthogonalMatchingPursuit, BayesianRidge,
-                         ARDRegression)):
+                         ARDRegression, SGDRegressor)):
             return shap.LinearExplainer(model, X)
 
         # Models that require KernelExplainer
