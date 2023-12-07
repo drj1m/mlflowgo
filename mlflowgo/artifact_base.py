@@ -55,4 +55,7 @@ class ArtifactBase():
 
         else:
             # Default to Explainer for models not explicitly handled above
-            return shap.KernelExplainer(model.predict_proba, X)
+            if hasattr(model, 'predict_proba'):
+                return shap.KernelExplainer(model.predict_proba, X)
+            else:
+                return shap.KernelExplainer(model.predict, X)
