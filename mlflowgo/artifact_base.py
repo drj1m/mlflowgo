@@ -48,4 +48,4 @@ class ArtifactBase():
 
         else:
             # Default to Explainer for models not explicitly handled above
-            return shap.Explainer(model, X)
+            return shap.KernelExplainer(model.predict_proba, X)
