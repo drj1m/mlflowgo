@@ -4,10 +4,25 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
-    OrthogonalMatchingPursuit, BayesianRidge)
+    OrthogonalMatchingPursuit, BayesianRidge, ARDRegression)
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
+
+
+def test_ard_regression_pipeline():
+    """ Test MLFlowGo with a pipeline containing ARD regression"""
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
+    df = pd.read_csv(url, delimiter=';')
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('ard_regression', ARDRegression())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('quality', axis=1),
+                             y=df['quality'], cv=-1)
 
 
 def test_bayesian_ridge_pipeline():
