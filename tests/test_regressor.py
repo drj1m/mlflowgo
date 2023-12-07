@@ -7,6 +7,8 @@ from sklearn.linear_model import (
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor)
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -50,6 +52,21 @@ def test_elastic_net_pipeline():
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('elastic_net', ElasticNet())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('quality', axis=1),
+                             y=df['quality'], cv=-1)
+
+
+def test_gaussian_process_regressor_pipeline():
+    """ Test MLFlowGo with a pipeline containing a gaussian process regressor"""
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
+    df = pd.read_csv(url, delimiter=';')
+    kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('GPR', GaussianProcessRegressor(kernel=kernel))
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
