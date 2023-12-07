@@ -480,12 +480,15 @@ class ArtifactLogger:
 
         for idx in range(X.shape[1]):
             shap_values = explainer(X)
-            shap.plots.scatter(shap_values[:, idx], show=False)
-            with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}.png", delete=False) as tmp:
-                plt.savefig(tmp.name, bbox_inches="tight")
-                plt.close()
-                mlflow.log_artifact(tmp.name, "SHAP/Scatter Plot")
-                os.remove(tmp.name)
+            try:
+                shap.plots.scatter(shap_values[:, idx], show=False)
+                with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}.png", delete=False) as tmp:
+                    plt.savefig(tmp.name, bbox_inches="tight")
+                    plt.close()
+                    mlflow.log_artifact(tmp.name, "SHAP/Scatter Plot")
+                    os.remove(tmp.name)
+            except IndexError:
+                continue
 
     def log_classification_shap_scatter_plot(self, model, X):
         """
