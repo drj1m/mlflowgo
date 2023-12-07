@@ -5,6 +5,7 @@ from sklearn.linear_model import (
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor)
 from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier
 
 
@@ -49,13 +50,14 @@ class ArtifactBase():
                          ARDRegression, SGDRegressor, PassiveAggressiveRegressor)):
             return shap.LinearExplainer(model, X)
 
-        # Models that require KernelExplainer
-        elif isinstance(model, SVC):  # Add other model types if needed
-            return shap.KernelExplainer(model.predict_proba, X)
+        elif isinstance(model, KNeighborsRegressor):
+            return shap.Explainer(model.predict, X)
 
         else:
             # Default to Explainer for models not explicitly handled above
             if hasattr(model, 'predict_proba'):
                 return shap.KernelExplainer(model.predict_proba, X)
             else:
-                return shap.KernelExplainer(model.predict, X)
+                return shap.KernelExplainer(model, X)
+
+            #return shap.Explainer(model, X)
