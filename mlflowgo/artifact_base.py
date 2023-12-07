@@ -1,6 +1,6 @@
 import shap
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso
+from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -39,7 +39,7 @@ class ArtifactBase():
             return shap.TreeExplainer(model)
 
         # Linear models
-        elif isinstance(model, (LogisticRegression, LinearRegression, Ridge, Lasso)):
+        elif isinstance(model, (LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet)):
             return shap.LinearExplainer(model, X)
 
         # Models that require KernelExplainer
