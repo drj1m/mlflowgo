@@ -88,7 +88,6 @@ class Regressor(ArtifactLogger):
         self.log_regression_shap_scatter_plot(self.base.pipeline.named_steps[self.base.model_step],
                                               self.base.X_train)
 
-
     def _generate_regression_experiment_summary(self):
         """
         Generates and updates an MLflow experiment summary based on a training pipeline.
