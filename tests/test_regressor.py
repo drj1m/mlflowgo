@@ -9,6 +9,7 @@ from sklearn.linear_model import (
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+from sklearn.tree import DecisionTreeRegressor
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -37,6 +38,21 @@ def test_bayesian_ridge_pipeline():
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('bayesian_ridge', BayesianRidge())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('quality', axis=1),
+                             y=df['quality'], cv=-1)
+
+
+def test_decision_tree_regressor_pipeline():
+    """ Test MLFlowGo with a pipeline containing Decision Tree regression"""
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
+    df = pd.read_csv(url, delimiter=';')
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('decision_tree', DecisionTreeRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

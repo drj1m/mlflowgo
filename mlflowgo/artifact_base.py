@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     SGDRegressor, PassiveAggressiveRegressor)
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
 class ArtifactBase():
@@ -39,7 +39,9 @@ class ArtifactBase():
         """
 
         # Tree-based models
-        if isinstance(model, (RandomForestClassifier, GradientBoostingClassifier, DecisionTreeClassifier)):
+        if isinstance(model,
+                      (RandomForestClassifier, GradientBoostingClassifier,
+                       DecisionTreeClassifier, DecisionTreeRegressor)):
             return shap.TreeExplainer(model)
 
         # Linear models
