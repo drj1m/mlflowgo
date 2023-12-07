@@ -15,9 +15,9 @@ def test_elastic_net_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('model', ElasticNet())
+        ('elastic_net', ElasticNet())
     ])
-    mlflow_go = MLFlowGo(experiment_name="elastic_net_test")
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=df.drop('quality', axis=1),
                              y=df['quality'], cv=-1)
@@ -30,9 +30,9 @@ def test_lasso_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('model', Lasso())
+        ('lasso', Lasso())
     ])
-    mlflow_go = MLFlowGo(experiment_name="lasso_regression_test")
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=df.drop('quality', axis=1),
                              y=df['quality'], cv=-1)
@@ -45,9 +45,9 @@ def test_linear_regression_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('model', LinearRegression())
+        ('linear_regression', LinearRegression())
     ])
-    mlflow_go = MLFlowGo(experiment_name="linear_regression_test")
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=df.drop('quality', axis=1),
                              y=df['quality'], cv=-1)
@@ -60,9 +60,9 @@ def test_ridge_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('model', Ridge())
+        ('ridge', Ridge())
     ])
-    mlflow_go = MLFlowGo(experiment_name="ridge_regression_test")
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=df.drop('quality', axis=1),
                              y=df['quality'], cv=-1)

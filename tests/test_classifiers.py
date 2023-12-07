@@ -28,9 +28,9 @@ def test_ada_boost_classifier_pipeline():
     )
 
     pipeline = Pipeline([
-        ('model', AdaBoostClassifier())
+        ('ada_boost', AdaBoostClassifier())
     ])
-    mlflow_go = MLFlowGo(experiment_name="log_ada_boost_classifier_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -48,9 +48,9 @@ def test_decision_tree_classifier_pipeline():
     )
 
     pipeline = Pipeline([
-        ('model', DecisionTreeClassifier())
+        ('decision_tree', DecisionTreeClassifier())
     ])
-    mlflow_go = MLFlowGo(experiment_name="log_decision_tree_classifier_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -68,9 +68,9 @@ def test_gaussian_process_classifier_pipeline():
     )
 
     pipeline = Pipeline([
-        ('model', GaussianProcessClassifier(1.0 * RBF(1.0)))
+        ('GPC', GaussianProcessClassifier(1.0 * RBF(1.0)))
     ])
-    mlflow_go = MLFlowGo(experiment_name="log_gpc_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -88,9 +88,9 @@ def test_gradient_boosting_classifier_pipeline():
     )
 
     pipeline = Pipeline([
-        ('model', GradientBoostingClassifier())
+        ('GBC', GradientBoostingClassifier())
     ])
-    mlflow_go = MLFlowGo(experiment_name="log_gbc_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -109,9 +109,9 @@ def test_knn_classifier_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('classifier', KNeighborsClassifier())
+        ('KNNC', KNeighborsClassifier())
     ])
-    mlflow_go = MLFlowGo(experiment_name="log_knnc_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -130,9 +130,9 @@ def test_logistic_regression_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('model', LogisticRegression())
+        ('logistic_regression', LogisticRegression())
     ])
-    mlflow_go = MLFlowGo(experiment_name="log_log_reg_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -151,9 +151,9 @@ def test_gaussian_nb_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('model', GaussianNB())
+        ('gaussian_nb', GaussianNB())
     ])
-    mlflow_go = MLFlowGo(experiment_name="gaussian_nb_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -171,9 +171,9 @@ def test_mlp_classifier_pipeline():
     )
 
     pipeline = Pipeline([
-        ('model', MLPClassifier())
+        ('MLP', MLPClassifier())
     ])
-    mlflow_go = MLFlowGo(experiment_name="mlpc_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -191,11 +191,11 @@ def test_quadratic_discriminant_analysis_pipeline():
     )
 
     pipeline = Pipeline([
-        ('model', QuadraticDiscriminantAnalysis())
+        ('QDA', QuadraticDiscriminantAnalysis())
     ])
     mlflow_go = MLFlowGo(experiment_name="qda_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
+                             X=data.drop(columns=['classification_test']),
                              y=data['target'],
                              cv=-1)
 
@@ -211,9 +211,9 @@ def test_random_forest_pipeline():
     )
 
     pipeline = Pipeline([
-        ('model', RandomForestClassifier())
+        ('RF', RandomForestClassifier())
     ])
-    mlflow_go = MLFlowGo(experiment_name="rfc_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
@@ -232,9 +232,9 @@ def test_svc_pipeline():
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('model', SVC(probability=True))
+        ('SVC', SVC(probability=True))
     ])
-    mlflow_go = MLFlowGo(experiment_name="svc_test")
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
                              X=data.drop(columns=['target']),
                              y=data['target'],
