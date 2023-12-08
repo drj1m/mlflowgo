@@ -75,6 +75,7 @@ def test_elastic_net_pipeline():
                              y=df['quality'], cv=-1)
 
 
+@pytest.mark.slow
 def test_gaussian_process_regressor_pipeline():
     """ Test MLFlowGo with a pipeline containing a gaussian process regressor"""
     url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
@@ -90,6 +91,7 @@ def test_gaussian_process_regressor_pipeline():
                              y=df['quality'], cv=-1)
 
 
+@pytest.mark.slow
 def test_knn_regressor_pipeline():
     """ Test MLFlowGo with a pipeline containing KNN regressor"""
     url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
