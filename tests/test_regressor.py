@@ -12,7 +12,7 @@ from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
-    AdaBoostRegressor)
+    AdaBoostRegressor, BaggingRegressor)
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -44,6 +44,19 @@ def test_ard_regression_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('ard_regression', ARDRegression())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_bagging_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing a bagging regressor"""
+    base_estimator = DecisionTreeRegressor()
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('bagging_regressor', BaggingRegressor(base_estimator=base_estimator))
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
