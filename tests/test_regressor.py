@@ -10,6 +10,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import ExtraTreesRegressor
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -68,6 +69,22 @@ def test_elastic_net_pipeline():
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('elastic_net', ElasticNet())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('quality', axis=1),
+                             y=df['quality'], cv=-1)
+
+
+@pytest.mark.slow
+def test_extra_tree_regressor_pipeline():
+    """ Test MLFlowGo with a pipeline containing Extra Tree Regressor"""
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
+    df = pd.read_csv(url, delimiter=';')
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('elastic_net', ExtraTreesRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

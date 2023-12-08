@@ -1,5 +1,5 @@
 import shap
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesRegressor
 from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
@@ -41,7 +41,8 @@ class ArtifactBase():
         # Tree-based models
         if isinstance(model,
                       (RandomForestClassifier, GradientBoostingClassifier,
-                       DecisionTreeClassifier, DecisionTreeRegressor)):
+                       DecisionTreeClassifier, DecisionTreeRegressor,
+                       ExtraTreesRegressor)):
             return shap.TreeExplainer(model)
 
         # Linear models
