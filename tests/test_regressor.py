@@ -118,7 +118,7 @@ def test_gradient_boosting_regressor_pipeline(df):
     """ Test MLFlowGo with a pipeline containing a gradient boosting regressor"""
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('gradient_boosting', GradientBoostingRegressor)
+        ('gradient_boosting', GradientBoostingRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

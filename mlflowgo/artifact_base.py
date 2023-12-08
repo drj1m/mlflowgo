@@ -6,6 +6,7 @@ from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor)
+from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -57,7 +58,7 @@ class ArtifactBase():
             return shap.LinearExplainer(model, X)
 
         # Edge cases
-        elif isinstance(model, (KNeighborsRegressor, AdaBoostRegressor)):
+        elif isinstance(model, (KNeighborsRegressor, AdaBoostRegressor, GaussianProcessRegressor)):
             return shap.Explainer(model.predict, X)
 
         else:
