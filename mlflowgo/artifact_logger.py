@@ -419,7 +419,10 @@ class ArtifactLogger:
         explainer = ArtifactBase.get_shap_explainer(model, X)
 
         # Calculate SHAP values
-        shap_values = explainer.shap_values(X)
+        if isinstance(explainer, shap.ExactExplainer):
+            shap_values = explainer(X)
+        else:
+            shap_values = explainer.shap_values(X)
 
         # SHAP Summary Plot
         if hasattr(model, 'classes_') and len(shap_values) == len(model.classes_):
