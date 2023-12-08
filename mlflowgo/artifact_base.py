@@ -58,14 +58,9 @@ class ArtifactBase():
                          ARDRegression, SGDRegressor, PassiveAggressiveRegressor)):
             return shap.LinearExplainer(model, X)
 
-        # Edge cases
-        elif isinstance(model, (KNeighborsRegressor, AdaBoostRegressor, GaussianProcessRegressor,
-                                BaggingRegressor, StackingRegressor, VotingRegressor)):
-            return shap.Explainer(model.predict, X)
-
         else:
             # Default to Explainer for models not explicitly handled above
             if hasattr(model, 'predict_proba'):
                 return shap.KernelExplainer(model.predict_proba, X)
             else:
-                return shap.KernelExplainer(model, X)
+                return shap.KernelExplainer(model.predict, X)

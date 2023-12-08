@@ -14,6 +14,7 @@ from sklearn.svm import SVR
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor)
+from sklearn.neural_network import MLPRegressor
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -194,6 +195,18 @@ def test_linear_regression_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('linear_regression', LinearRegression())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_mlp_regression_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing MLP regression """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('mlp_regressor', MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam'))
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
