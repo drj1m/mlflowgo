@@ -2,7 +2,7 @@ import shap
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, ExtraTreesRegressor,
     RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor,
-    BaggingRegressor)
+    BaggingRegressor, StackingRegressor)
 from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
@@ -60,7 +60,7 @@ class ArtifactBase():
 
         # Edge cases
         elif isinstance(model, (KNeighborsRegressor, AdaBoostRegressor, GaussianProcessRegressor,
-                                BaggingRegressor)):
+                                BaggingRegressor, StackingRegressor)):
             return shap.Explainer(model.predict, X)
 
         else:
@@ -69,5 +69,3 @@ class ArtifactBase():
                 return shap.KernelExplainer(model.predict_proba, X)
             else:
                 return shap.KernelExplainer(model, X)
-
-            #return shap.Explainer(model, X)

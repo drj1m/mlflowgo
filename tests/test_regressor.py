@@ -10,9 +10,10 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.svm import SVR
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
-    AdaBoostRegressor, BaggingRegressor)
+    AdaBoostRegressor, BaggingRegressor, StackingRegressor)
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -253,6 +254,24 @@ def test_sgr_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('sgr_regressor', SGDRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_stacking_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing stacking regressor"""
+    base_estimators = [
+        ('lr', LinearRegression()),
+        ('dt', DecisionTreeRegressor()),
+        ('svr', SVR())
+    ]
+    final_estimator = LinearRegression()
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('stacking_regressor', StackingRegressor(estimators=base_estimators, final_estimator=final_estimator))
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
