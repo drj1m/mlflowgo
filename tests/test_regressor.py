@@ -13,7 +13,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
-    AdaBoostRegressor, BaggingRegressor, StackingRegressor)
+    AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor)
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -272,6 +272,23 @@ def test_stacking_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('stacking_regressor', StackingRegressor(estimators=base_estimators, final_estimator=final_estimator))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_voting_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing a voting regressor"""
+    base_estimators = [
+        ('lr', LinearRegression()),
+        ('dt', DecisionTreeRegressor()),
+        ('rf', RandomForestRegressor())
+    ]
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('voting_regressor', VotingRegressor(estimators=base_estimators))
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
