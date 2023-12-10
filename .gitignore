@@ -8,4 +8,6 @@ __pycache__/
 # MLFlow 
 mlruns/
 
+*.vscode/
+
 playarea/

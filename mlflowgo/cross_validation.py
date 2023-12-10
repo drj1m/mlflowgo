@@ -58,8 +58,6 @@ class TemporalCrossValidation:
         if (self.train_th + self.val_th + self.test_th) != 1:
             raise ValueError("The sum of the train/val/test thresholds must equate to 1.")
 
-        self.strategy_dict = {}
-
     def _get_split_indices(
         self, start_idx: int, end_idx: int
     ) -> Tuple[int, int, int]:
@@ -129,8 +127,11 @@ class TemporalCrossValidation:
         Returns:
             Dictionary of temporal cross-validation strategies.
         """
+        self.strategy_dict = {}
+
         unique_temporals = np.sort(self.df[self.temporal_column].unique())
-        temporal_cvs = self.rolling_temporal_cv(unique_temporals, n_cvs)
+        temporal_cvs = self.rolling_temporal_cv(
+            unique_temporals=unique_temporals, n=n_cvs)
 
         for i, (train_indices, val_indices, test_indices) in enumerate(temporal_cvs):
             self.strategy_dict[f"CV_{i + 1}"] = {
