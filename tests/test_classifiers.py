@@ -3,7 +3,7 @@ from sklearn.datasets import load_iris, load_breast_cancer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.linear_model import LogisticRegression, RidgeClassifier
+from sklearn.linear_model import LogisticRegression, RidgeClassifier, SGDClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
@@ -233,6 +233,27 @@ def test_ridge_classifier_pipeline():
     pipeline = Pipeline([
          ('scaler', StandardScaler()),
          ('ridge_classifier', RidgeClassifier(alpha=1.0))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=data.drop(columns=['target']),
+                             y=data['target'],
+                             cv=-1)
+
+
+def test_sgd_classifier_pipeline():
+    """ Test MLFlowGo with a pipeline containing a SGD Classifier"""
+    iris = load_iris()
+    noise = np.random.normal(0, 0.5, iris['data'].shape)
+    data = pd.DataFrame(
+        data=np.c_[iris['data'] + noise,
+                   iris['target']],
+        columns=np.append(iris['feature_names'], ['target'])
+    )
+
+    pipeline = Pipeline([
+         ('scaler', StandardScaler()),
+         ('sgd_classifier', SGDClassifier(loss='hinge', penalty='l2', alpha=0.0001, max_iter=1000, tol=1e-3))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
