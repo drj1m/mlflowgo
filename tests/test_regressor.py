@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
-    SGDRegressor, PassiveAggressiveRegressor)
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
@@ -136,6 +136,18 @@ def test_gradient_boosting_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('gradient_boosting', GradientBoostingRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_hubber_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing a hubber regressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('hubber_regressor', HuberRegressor(epsilon=1.35))
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
