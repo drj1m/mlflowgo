@@ -17,8 +17,8 @@ import numpy as np
 import pandas as pd
 
 
-def test_ada_boost_classifier_pipeline():
-    """ Test MLFlowGo with a pipeline containing AdaBoostClassifier """
+@pytest.fixture
+def iris():
     iris = load_iris()
     noise = np.random.normal(0, 0.5, iris['data'].shape)
     data = pd.DataFrame(
@@ -26,54 +26,42 @@ def test_ada_boost_classifier_pipeline():
                    iris['target']],
         columns=np.append(iris['feature_names'], ['target'])
     )
+    return data
 
+
+def test_ada_boost_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing AdaBoostClassifier """
     pipeline = Pipeline([
         ('ada_boost', AdaBoostClassifier())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_decision_tree_classifier_pipeline():
+def test_decision_tree_classifier_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing DecisionTreeClassifier """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('decision_tree', DecisionTreeClassifier())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_gaussian_process_classifier_pipeline():
+def test_gaussian_process_classifier_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing GaussianProcessClassifier """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('GPC', GaussianProcessClassifier(1.0 * RBF(1.0)))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
@@ -97,187 +85,116 @@ def test_gradient_boosting_classifier_pipeline():
                              cv=-1)
 
 
-def test_knn_classifier_pipeline():
+def test_knn_classifier_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing KNeighborsClassifier """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('KNNC', KNeighborsClassifier())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_logistic_regression_pipeline():
+def test_logistic_regression_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing LogisticRegression """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('logistic_regression', LogisticRegression())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_gaussian_nb_pipeline():
+def test_gaussian_nb_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing GaussianNB """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('gaussian_nb', GaussianNB())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_mlp_classifier_pipeline():
+def test_mlp_classifier_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing MLPClassifier """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
+        ('scaler', StandardScaler()),
         ('MLP', MLPClassifier())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_quadratic_discriminant_analysis_pipeline():
+def test_quadratic_discriminant_analysis_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing QuadraticDiscriminantAnalysis """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('QDA', QuadraticDiscriminantAnalysis())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_random_forest_pipeline():
+def test_random_forest_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing RandomForestClassifier """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('RF', RandomForestClassifier())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_ridge_classifier_pipeline():
+def test_ridge_classifier_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing a Ridge Classifier"""
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
          ('scaler', StandardScaler()),
          ('ridge_classifier', RidgeClassifier(alpha=1.0))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_sgd_classifier_pipeline():
+def test_sgd_classifier_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing a SGD Classifier"""
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
          ('scaler', StandardScaler()),
          ('sgd_classifier', SGDClassifier(loss='hinge', penalty='l2', alpha=0.0001, max_iter=1000, tol=1e-3))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
 
 
-def test_svc_pipeline():
+def test_svc_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing SVC """
-    iris = load_iris()
-    noise = np.random.normal(0, 0.5, iris['data'].shape)
-    data = pd.DataFrame(
-        data=np.c_[iris['data'] + noise,
-                   iris['target']],
-        columns=np.append(iris['feature_names'], ['target'])
-    )
-
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('SVC', SVC(probability=True))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
-                             X=data.drop(columns=['target']),
-                             y=data['target'],
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
                              cv=-1)
