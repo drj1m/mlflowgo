@@ -2,7 +2,7 @@ import shap
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, ExtraTreesRegressor,
     RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor,
-    BaggingRegressor, StackingRegressor, VotingRegressor)
+    BaggingRegressor, StackingRegressor, VotingRegressor, ExtraTreesClassifier)
 from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
@@ -60,7 +60,7 @@ class ArtifactBase():
                       (RandomForestClassifier, GradientBoostingClassifier,
                        DecisionTreeClassifier, DecisionTreeRegressor,
                        ExtraTreesRegressor, RandomForestRegressor,
-                       GradientBoostingRegressor)):
+                       GradientBoostingRegressor, ExtraTreesClassifier)):
             return shap.TreeExplainer(model), X
 
         # Linear models
