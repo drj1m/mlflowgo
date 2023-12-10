@@ -81,13 +81,15 @@ class Regressor(ArtifactLogger):
                                         self.base.feature_names)
 
         # Log SHAP
-        self.log_shap_summary_plot(self.base.pipeline.named_steps[self.base.model_step],
+        self.log_shap_summary_plot(self.base.pipeline,
+                                   self.base.model_step,
                                    self.base.X_train)
-        self.log_shap_partial_dependence_plot(self.base.pipeline.named_steps[self.base.model_step],
+        self.log_shap_partial_dependence_plot(self.base.pipeline,
+                                              self.base.model_step,
                                               self.base.X_train)
-        self.log_regression_shap_scatter_plot(self.base.pipeline.named_steps[self.base.model_step],
+        self.log_regression_shap_scatter_plot(self.base.pipeline,
+                                              self.base.model_step,
                                               self.base.X_train)
-
 
     def _generate_regression_experiment_summary(self):
         """
@@ -134,8 +136,8 @@ class Regressor(ArtifactLogger):
 
         # Train the model and predict
         self.base.pipeline.fit(self.base.X_train, self.base.y_train)
-        y_pred_train = self.base.pipeline.predict(self.base.X_train)
-        y_pred_test = self.base.pipeline.predict(self.base.X_test)
+        y_pred_train = np.nan_to_num(self.base.pipeline.predict(self.base.X_train))
+        y_pred_test = np.nan_to_num(self.base.pipeline.predict(self.base.X_test))
 
         # Calculate performance metrics
         performance_metrics = {

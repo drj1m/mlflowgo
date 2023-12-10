@@ -1,8 +1,18 @@
 import shap
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.ensemble import (
+    RandomForestClassifier, GradientBoostingClassifier, ExtraTreesRegressor,
+    RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor,
+    BaggingRegressor, StackingRegressor, VotingRegressor)
+from sklearn.linear_model import (
+    LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
+    LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, TheilSenRegressor)
+from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.pipeline import Pipeline
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
 class ArtifactBase():
@@ -22,30 +32,48 @@ class ArtifactBase():
         self.dataset_desc = kwargs.get('dataset_desc', None)
 
     @classmethod
-    def get_shap_explainer(self, model, X):
+    def get_shap_explainer(self, pipeline, model_step, X):
         """
         Determines and returns the appropriate SHAP explainer based on the model type.
 
         Parameters:
-        model: The trained machine learning model.
+        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
+        model_step (str): Step name for the model
         X (pd.DataFrame): The input features used for SHAP value calculation.
 
         Returns:
         A SHAP explainer object.
         """
 
+        model = pipeline.named_steps[model_step]
+        transform_pipeline = Pipeline(
+            [step for step in pipeline.steps if step[0] != model_step]
+        )
+
+        if len(transform_pipeline) > 0:
+            X = pd.DataFrame(data=transform_pipeline.transform(X),
+                             columns=transform_pipeline.get_feature_names_out())
+
         # Tree-based models
-        if isinstance(model, (RandomForestClassifier, GradientBoostingClassifier, DecisionTreeClassifier)):
-            return shap.TreeExplainer(model)
+        if isinstance(model,
+                      (RandomForestClassifier, GradientBoostingClassifier,
+                       DecisionTreeClassifier, DecisionTreeRegressor,
+                       ExtraTreesRegressor, RandomForestRegressor,
+                       GradientBoostingRegressor)):
+            return shap.TreeExplainer(model), X
 
         # Linear models
-        elif isinstance(model, (LogisticRegression, LinearRegression)):
-            return shap.LinearExplainer(model, X)
-
-        # Models that require KernelExplainer
-        elif isinstance(model, SVC):  # Add other model types if needed
-            return shap.KernelExplainer(model.predict(X), X)
+        elif isinstance(model,
+                        (LogisticRegression, LinearRegression, Ridge,
+                         Lasso, ElasticNet, Lars, LassoLars,
+                         OrthogonalMatchingPursuit, BayesianRidge,
+                         ARDRegression, SGDRegressor, PassiveAggressiveRegressor,
+                         HuberRegressor, TheilSenRegressor)):
+            return shap.LinearExplainer(model, X), X
 
         else:
             # Default to Explainer for models not explicitly handled above
-            return shap.Explainer(model, X)
+            if hasattr(model, 'predict_proba'):
+                return shap.KernelExplainer(model.predict_proba, X), X
+            else:
+                return shap.KernelExplainer(model.predict, X), X
