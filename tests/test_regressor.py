@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
-    TheilSenRegressor)
+    TheilSenRegressor, RANSACRegressor)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
@@ -270,6 +270,18 @@ def test_random_forest_regression_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('random_forest', RandomForestRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_ransac_regression_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing a RANSAC regressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('ransac', RANSACRegressor(estimator=LinearRegression()))
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
