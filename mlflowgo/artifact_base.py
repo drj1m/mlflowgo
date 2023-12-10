@@ -1,16 +1,12 @@
 import shap
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, ExtraTreesRegressor,
-    RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor,
-    BaggingRegressor, StackingRegressor, VotingRegressor, ExtraTreesClassifier)
+    RandomForestRegressor, GradientBoostingRegressor, ExtraTreesClassifier)
 from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, TheilSenRegressor,
     RidgeClassifier, SGDClassifier, Perceptron)
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.pipeline import Pipeline
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
