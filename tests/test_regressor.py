@@ -15,6 +15,8 @@ from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor)
 from sklearn.neural_network import MLPRegressor
+from sklearn.isotonic import IsotonicRegression
+from sklearn.decomposition import PCA
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -134,6 +136,18 @@ def test_gradient_boosting_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('gradient_boosting', GradientBoostingRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_isotinic_regression_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing isotonic regression"""
+    pipeline = Pipeline([
+        ('pca', PCA(n_components=1)),
+        ('isotonic_regression', IsotonicRegression())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
