@@ -5,7 +5,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
-    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor)
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
+    TheilSenRegressor)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
@@ -311,6 +312,18 @@ def test_stacking_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('stacking_regressor', StackingRegressor(estimators=base_estimators, final_estimator=final_estimator))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_theil_sen_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing TheilSen regression """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('theil_sen', TheilSenRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

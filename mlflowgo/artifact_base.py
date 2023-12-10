@@ -6,7 +6,7 @@ from sklearn.ensemble import (
 from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
-    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor)
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, TheilSenRegressor)
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsRegressor
@@ -68,7 +68,7 @@ class ArtifactBase():
                          Lasso, ElasticNet, Lars, LassoLars,
                          OrthogonalMatchingPursuit, BayesianRidge,
                          ARDRegression, SGDRegressor, PassiveAggressiveRegressor,
-                         HuberRegressor)):
+                         HuberRegressor, TheilSenRegressor)):
             return shap.LinearExplainer(model, X), X
 
         else:
