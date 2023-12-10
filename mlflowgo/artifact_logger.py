@@ -408,15 +408,16 @@ class ArtifactLogger:
             mlflow.log_artifact(tmp.name, 'Metrics')
         os.remove(tmp.name)
 
-    def log_shap_summary_plot(self, model, X):
+    def log_shap_summary_plot(self, pipeline, model_step, X):
         """
         Generates and logs a SHAP summary plot to MLflow.
 
         Parameters:
-        model: Reference to the model.
+        pipeline: Reference to the sklearn pipeline object.
+        model_step (string): Step name for the model in the pipeline.
         X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
         """
-        explainer = ArtifactBase.get_shap_explainer(model, X)
+        explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
 
         # Calculate SHAP values
         if isinstance(explainer, shap.ExactExplainer):
@@ -425,8 +426,8 @@ class ArtifactLogger:
             shap_values = explainer.shap_values(X)
 
         # SHAP Summary Plot
-        if hasattr(model, 'classes_') and len(shap_values) == len(model.classes_):
-            for idx, _class in enumerate(model.classes_):
+        if hasattr(pipeline.named_steps[model_step], 'classes_') and len(shap_values) == len(pipeline.named_steps[model_step].classes_):
+            for idx, _class in enumerate(pipeline.named_steps[model_step].classes_):
                 shap.summary_plot(shap_values[idx], X, show=False)
                 with tempfile.NamedTemporaryFile(suffix=f"__class {_class}.png", delete=False) as tmp:
                     plt.title(f"SHAP summary plot for class: {_class}")
@@ -442,19 +443,22 @@ class ArtifactLogger:
                 mlflow.log_artifact(tmp.name, "SHAP/Summary Plot")
                 os.remove(tmp.name)
 
-    def log_shap_partial_dependence_plot(self, model, X):
+    def log_shap_partial_dependence_plot(self, pipeline, model_step, X):
         """
         Generates and logs partial dependency plots for each feature to MLflow
 
         Parameters:
-        model: Reference to the model.
+        pipeline: Reference to the sklearn pipeline object.
+        model_step (string): Step name for the model in the pipeline.
         X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
         """
+
+        _, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
 
         for feature in X.columns:
             shap.partial_dependence_plot(
                 feature,
-                model.predict,
+                pipeline.named_steps[model_step].predict,
                 X,
                 ice=False,
                 model_expected_value=True,
@@ -467,19 +471,17 @@ class ArtifactLogger:
                 mlflow.log_artifact(tmp.name, "SHAP/Partial Dependence Plot")
                 os.remove(tmp.name)
 
-    def log_regression_shap_scatter_plot(self, model, X):
+    def log_regression_shap_scatter_plot(self, pipeline, model_step, X):
         """
         Generates and logs scatter plots for each feature in MLflow
 
         Parameters:
-        model: Reference to the regression model.
+        pipeline: Reference to the sklearn pipeline object.
+        model_step (string): Step name for the model in the pipeline.
         X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
         """
 
-        explainer = ArtifactBase.get_shap_explainer(model, X)
-        if isinstance(explainer, shap.LinearExplainer):
-            # shap.plots.scatter() does not currently work for LinearExplainer objects
-            explainer = shap.Explainer(model, X)
+        explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
 
         for idx in range(X.shape[1]):
             shap_values = explainer(X)
@@ -493,16 +495,17 @@ class ArtifactLogger:
             except IndexError:
                 continue
 
-    def log_classification_shap_scatter_plot(self, model, X):
+    def log_classification_shap_scatter_plot(self, pipeline, model_step, X):
         """
         Generates and logs scatter plots for each feature in MLflow
 
         Parameters:
-        model: Reference to the regression model.
+        pipeline: Reference to the sklearn pipeline object.
+        model_step (string): Step name for the model in the pipeline.
         X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
         """
-
-        explainer = ArtifactBase.get_shap_explainer(model, X)
+        model = pipeline.named_steps[model_step]
+        explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
 
         for class_idx in range(len(model.classes_)):
             for idx in range(X.shape[1]):
@@ -697,8 +700,8 @@ class ArtifactLogger:
         X_test, y_test (pd.DataFrame): Test dataset (features and target).
         """
         # Predictions on training and test sets
-        y_train_pred = pipeline.predict(X_train)
-        y_test_pred = pipeline.predict(X_test)
+        y_train_pred = np.nan_to_num(pipeline.predict(X_train))
+        y_test_pred = np.nan_to_num(pipeline.predict(X_test))
 
         # Calculate metrics
         train_mse = mean_squared_error(y_train, y_train_pred)
