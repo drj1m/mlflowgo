@@ -97,6 +97,11 @@ class Base():
                 "learning_rate": uniform(0.01, 1.0),
                 "loss": ['linear', 'square', 'exponential']
             },
+            'DecisionTreeRegressor': {
+                "max_depth": [None, 10, 20, 30, 40],
+                "min_samples_split": sp_randint(2, 10),
+                "min_samples_leaf": sp_randint(1, 10)
+            },
             'ElasticNet': {
                 "alpha": uniform(0.1, 10),
                 "l1_ratio": uniform(0.0, 1.0)
