@@ -6,7 +6,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.linear_model import LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier,
-    BaggingClassifier, VotingClassifier)
+    BaggingClassifier, VotingClassifier, StackingClassifier)
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
@@ -220,6 +220,24 @@ def test_sgd_classifier_pipeline(iris):
     pipeline = Pipeline([
          ('scaler', StandardScaler()),
          ('sgd_classifier', SGDClassifier(loss='hinge', penalty='l2', alpha=0.0001, max_iter=1000, tol=1e-3))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_stacking_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing a Stacking Classifier"""
+    base_estimators = [
+        ('svm', SVC(probability=True)),
+        ('decision_tree', DecisionTreeClassifier())
+    ]
+    final_estimator = LogisticRegression()
+    pipeline = Pipeline([
+         ('scaler', StandardScaler()),
+         ('stacking_classifier', StackingClassifier(estimators=base_estimators, final_estimator=final_estimator))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
