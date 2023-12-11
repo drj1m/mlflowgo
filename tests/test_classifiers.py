@@ -5,7 +5,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.linear_model import LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron
 from sklearn.ensemble import (
-    RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
+    RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier,
+    BaggingClassifier)
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
@@ -34,6 +35,19 @@ def test_ada_boost_classifier_pipeline(iris):
     """ Test MLFlowGo with a pipeline containing AdaBoostClassifier """
     pipeline = Pipeline([
         ('ada_boost', AdaBoostClassifier())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_bagging_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing AdaBoostClassifier """
+    base_estimator = DecisionTreeClassifier()
+    pipeline = Pipeline([
+         ('bagging_classifier', BaggingClassifier(base_estimator=base_estimator, n_estimators=10)) 
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
