@@ -3,7 +3,7 @@ from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
 from scipy.stats import randint as sp_randint
-from scipy.stats import uniform
+from scipy.stats import uniform, loguniform
 
 
 class Base():
@@ -97,6 +97,20 @@ class Base():
                 "learning_rate": uniform(0.01, 1.0),
                 "loss": ['linear', 'square', 'exponential']
             },
+            'ARDRegression': {
+                "n_iter": sp_randint(100, 500),
+                "alpha_1": uniform(1e-6, 1e-5),
+                "alpha_2": uniform(1e-6, 1e-5),
+                "lambda_1": uniform(1e-6, 1e-5),
+                "lambda_2": uniform(1e-6, 1e-5)
+            },
+            'BayesianRidge': {
+                "n_iter": sp_randint(100, 500),
+                "alpha_1": uniform(1e-6, 1e-5),
+                "alpha_2": uniform(1e-6, 1e-5),
+                "lambda_1": uniform(1e-6, 1e-5),
+                "lambda_2": uniform(1e-6, 1e-5)
+            },
             'DecisionTreeRegressor': {
                 "max_depth": [None, 10, 20, 30, 40],
                 "min_samples_split": sp_randint(2, 10),
@@ -105,6 +119,12 @@ class Base():
             'ElasticNet': {
                 "alpha": uniform(0.1, 10),
                 "l1_ratio": uniform(0.0, 1.0)
+            },
+            'ExtraTreesRegressor': {
+                "n_estimators": sp_randint(100, 500),
+                "max_depth": [None, 10, 20, 30],
+                "min_samples_split": sp_randint(2, 10),
+                "min_samples_leaf": sp_randint(1, 10)
             },
             'GradientBoostingRegressor': {
                 "n_estimators": sp_randint(100, 500),
@@ -116,8 +136,33 @@ class Base():
                 "weights": ['uniform', 'distance'],
                 "algorithm": ['auto', 'ball_tree', 'kd_tree', 'brute']
             },
+            'HuberRegressor': {
+                "epsilon": uniform(1.0, 3.0),
+                "alpha": uniform(0.00001, 0.1)
+            },
+            'Lars': {
+                "n_nonzero_coefs": sp_randint(1, 20)
+            },
             'Lasso': {
                 "alpha": uniform(0.1, 10)
+            },
+            'LassoLars': {
+                "alpha": uniform(0.01, 10)
+            },
+            'MLPRegressor': {
+                "hidden_layer_sizes": [(50,), (100,), (50, 50), (100, 50)],
+                "activation": ['tanh', 'relu'],
+                "solver": ['sgd', 'adam'],
+                "alpha": uniform(0.0001, 0.05),
+                "learning_rate": ['constant', 'adaptive']
+            },
+            'OrthogonalMatchingPursuit': {
+                "n_nonzero_coefs": sp_randint(1, 20)
+            },
+            'PassiveAggressiveRegressor': {
+                "max_iter": sp_randint(1000, 5000),
+                "tol": loguniform(1e-4, 1e-1),
+                "C": uniform(0.1, 10)
             },
             'RandomForestRegressor': {
                 "n_estimators": sp_randint(10, 200),
@@ -130,10 +175,19 @@ class Base():
             'Ridge': {
                 "alpha": uniform(0.1, 10)
             },
+            'SGDRegressor': {
+                "max_iter": sp_randint(1000, 5000),
+                "tol": loguniform(1e-4, 1e-1),
+                "penalty": ['l2', 'l1', 'elasticnet'],
+                "alpha": uniform(0.0001, 0.1)
+            },
             'SVR': {
                 "C": uniform(0.1, 10),
                 "kernel": ['linear', 'poly', 'rbf', 'sigmoid']
             },
+            'TheilSenRegressor': {
+                "max_subpopulation": sp_randint(10, 500)
+            }
         }
 
         if model_name in _param_dist:
