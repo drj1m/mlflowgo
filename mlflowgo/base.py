@@ -108,6 +108,9 @@ class Base():
             'Ridge': {
                 "alpha": uniform(0.1, 10)
             },
+            'Lasso': {
+                "alpha": uniform(0.1, 10)
+            },
             'SVR': {
                 "C": uniform(0.1, 10),
                 "kernel": ['linear', 'poly', 'rbf', 'sigmoid']
