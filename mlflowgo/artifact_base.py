@@ -1,15 +1,12 @@
 import shap
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, ExtraTreesRegressor,
-    RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor,
-    BaggingRegressor, StackingRegressor, VotingRegressor)
+    RandomForestRegressor, GradientBoostingRegressor, ExtraTreesClassifier)
 from sklearn.linear_model import (
     LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
     LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
-    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, TheilSenRegressor)
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsRegressor
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, TheilSenRegressor,
+    RidgeClassifier, SGDClassifier, Perceptron)
 from sklearn.pipeline import Pipeline
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -59,7 +56,7 @@ class ArtifactBase():
                       (RandomForestClassifier, GradientBoostingClassifier,
                        DecisionTreeClassifier, DecisionTreeRegressor,
                        ExtraTreesRegressor, RandomForestRegressor,
-                       GradientBoostingRegressor)):
+                       GradientBoostingRegressor, ExtraTreesClassifier)):
             return shap.TreeExplainer(model), X
 
         # Linear models
@@ -68,7 +65,8 @@ class ArtifactBase():
                          Lasso, ElasticNet, Lars, LassoLars,
                          OrthogonalMatchingPursuit, BayesianRidge,
                          ARDRegression, SGDRegressor, PassiveAggressiveRegressor,
-                         HuberRegressor, TheilSenRegressor)):
+                         HuberRegressor, TheilSenRegressor, RidgeClassifier,
+                         SGDClassifier, Perceptron)):
             return shap.LinearExplainer(model, X), X
 
         else:

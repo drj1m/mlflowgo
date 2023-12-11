@@ -17,32 +17,34 @@ class Classifier(ArtifactLogger):
     def log(self):
         """ Log artifacts to MLFlow
         """
-
-        y_scores = self.base.pipeline.predict_proba(self.base.X_test)
+        
         y_pred = self.base.pipeline.predict(self.base.X_test)
-        # Log ROC curve
-        self.log_roc_curve(self.base.y_test,
-                           y_scores,
-                           self.base.pipeline.named_steps[self.base.model_step].classes_)
+
+        if hasattr(self.base.pipeline.named_steps[self.base.model_step], 'predict_proba'):
+            y_scores = self.base.pipeline.predict_proba(self.base.X_test)
+            # Log ROC curve
+            self.log_roc_curve(self.base.y_test,
+                               y_scores,
+                               self.base.pipeline.named_steps[self.base.model_step].classes_)
+
+            # Log precision recall curve
+            self.log_precision_recall_curve(self.base.y_test,
+                                            y_scores,
+                                            self.base.pipeline.named_steps[self.base.model_step].classes_)
+            
+            # Log calibration plot
+            self.log_calibration_plot(self.base.pipeline,
+                                      self.base.X_test,
+                                      self.base.y_test)
 
         # Log confusion matrix
         self.log_confusion_matrix(self.base.y_test,
                                   y_pred)
 
-        # Log precision recall curve
-        self.log_precision_recall_curve(self.base.y_test,
-                                        y_scores,
-                                        self.base.pipeline.named_steps[self.base.model_step].classes_)
-
         # Log classification report
         self.log_classification_report(self.base.y_test,
                                        y_pred,
                                        self.base.pipeline.named_steps[self.base.model_step].classes_)
-
-        # Log calibration plot
-        self.log_calibration_plot(self.base.pipeline,
-                                  self.base.X_test,
-                                  self.base.y_test)
 
         # Log data sample
         self.log_data_sample(self.base.X_test,
