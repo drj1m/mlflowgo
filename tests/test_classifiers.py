@@ -6,7 +6,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.linear_model import LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier,
-    BaggingClassifier)
+    BaggingClassifier, VotingClassifier)
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
@@ -44,7 +44,7 @@ def test_ada_boost_classifier_pipeline(iris):
 
 
 def test_bagging_classifier_pipeline(iris):
-    """ Test MLFlowGo with a pipeline containing AdaBoostClassifier """
+    """ Test MLFlowGo with a pipeline containing Bagging Classifier """
     base_estimator = DecisionTreeClassifier()
     pipeline = Pipeline([
          ('bagging_classifier', BaggingClassifier(base_estimator=base_estimator, n_estimators=10)) 
@@ -233,6 +233,24 @@ def test_svc_pipeline(iris):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('SVC', SVC(probability=True))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_voting_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing a voting classifier"""
+    base_estimators = [
+        ('logistic_regression', LogisticRegression()),
+        ('decision_tree', DecisionTreeClassifier()),
+        ('svm', SVC(probability=True))
+    ]
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('voting_classifier', VotingClassifier(estimators=base_estimators, voting='soft'))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
