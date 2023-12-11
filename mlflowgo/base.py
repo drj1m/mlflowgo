@@ -92,10 +92,18 @@ class Base():
             model_name(str): Name of the model from `model.__class__.__name__`
         """
         _param_dist = {
+            'AdaBoostRegressor': {
+                "n_estimators": sp_randint(50, 500),
+                "learning_rate": uniform(0.01, 1.0),
+                "loss": ['linear', 'square', 'exponential']
+            },
             'GradientBoostingRegressor': {
                 "n_estimators": sp_randint(100, 500),
                 "learning_rate": uniform(0.01, 0.2),
                 "max_depth": sp_randint(3, 10)
+            },
+            'Lasso': {
+                "alpha": uniform(0.1, 10)
             },
             'RandomForestRegressor': {
                 "n_estimators": sp_randint(10, 200),
@@ -106,9 +114,6 @@ class Base():
                 "bootstrap": [True, False]
             },
             'Ridge': {
-                "alpha": uniform(0.1, 10)
-            },
-            'Lasso': {
                 "alpha": uniform(0.1, 10)
             },
             'SVR': {
