@@ -2,6 +2,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
+from scipy.stats import randint as sp_randint
+from scipy.stats import uniform
 
 
 class Base():
@@ -82,3 +84,37 @@ class Base():
 
         if metrics is None:
             return self._get_default_metrics(task_type)
+
+    @staticmethod
+    def get_param_dist(model_name):
+        """ Returns the param_dist based upon the model name
+        Parameters:
+            model_name(str): Name of the model from `model.__class__.__name__`
+        """
+        _param_dist = {
+            'GradientBoostingRegressor': {
+                "n_estimators": sp_randint(100, 500),
+                "learning_rate": uniform(0.01, 0.2),
+                "max_depth": sp_randint(3, 10)
+            },
+            'RandomForestRegressor': {
+                "n_estimators": sp_randint(10, 200),
+                "max_depth": [3, None],
+                "max_features": sp_randint(1, 11),
+                "min_samples_split": sp_randint(2, 11),
+                "min_samples_leaf": sp_randint(1, 11),
+                "bootstrap": [True, False]
+            },
+            'Ridge': {
+                "alpha": uniform(0.1, 10)
+            },
+            'SVR': {
+                "C": uniform(0.1, 10),
+                "kernel": ['linear', 'poly', 'rbf', 'sigmoid']
+            },
+        }
+
+        if model_name in _param_dist:
+            return _param_dist[model_name]
+        else:
+            return None
