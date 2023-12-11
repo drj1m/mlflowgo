@@ -97,6 +97,10 @@ class Base():
                 "learning_rate": uniform(0.01, 1.0),
                 "loss": ['linear', 'square', 'exponential']
             },
+            'ElasticNet': {
+                "alpha": uniform(0.1, 10),
+                "l1_ratio": uniform(0.0, 1.0)
+            },
             'GradientBoostingRegressor': {
                 "n_estimators": sp_randint(100, 500),
                 "learning_rate": uniform(0.01, 0.2),
