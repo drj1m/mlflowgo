@@ -111,6 +111,11 @@ class Base():
                 "learning_rate": uniform(0.01, 0.2),
                 "max_depth": sp_randint(3, 10)
             },
+            'KNeighborsRegressor': {
+                "n_neighbors": sp_randint(1, 30),
+                "weights": ['uniform', 'distance'],
+                "algorithm": ['auto', 'ball_tree', 'kd_tree', 'brute']
+            },
             'Lasso': {
                 "alpha": uniform(0.1, 10)
             },
