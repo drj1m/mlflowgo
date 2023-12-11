@@ -1,4 +1,5 @@
 from .base import Base
+from lazypredict.Supervised import LazyRegressor
 from sklearn.model_selection import RandomizedSearchCV, cross_val_score
 from sklearn.metrics import mean_squared_error
 import numpy as np
@@ -13,13 +14,41 @@ class Tournament(Base):
 
         self.X_train = X_train
         self.y_train = y_train
+        self.X_test = X_test
+        self.y_test = y_test
         self.pipelines = pipelines
         self.models = {}
         self.models_params = {}
 
     def run(self):
+        if self.pipelines is None:
+            self.pipelines = self._find_best_models()
+
         self._pipeline_array_to_dict()
         self._run_cv_param_search()
+
+    def _find_best_models(self):
+        """ Use lazypredict to find the best models to evaluate
+        """
+        final_models = []
+        top_n = 5
+        lp = LazyRegressor(predictions=True)
+        models, predictions = lp.fit(
+            self.X_train,
+            self.X_test,
+            self.y_train,
+            self.y_test
+        )
+        top_models = models.sort_values(by='RMSE').index.tolist()
+
+        for _model in top_models:
+            if len(final_models) > top_n:
+                break
+            _pipeline = self.get_basic_pipeline(_model)
+            if _pipeline is not None:
+                final_models.append(_pipeline)
+
+        return final_models
 
     def _pipeline_array_to_dict(self):
         """ Converts a pipeline of models to dict
