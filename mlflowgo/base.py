@@ -1,4 +1,21 @@
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import (
+    LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
+    OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
+    TheilSenRegressor, RANSACRegressor)
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.svm import SVR
+from sklearn.ensemble import (
+    ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
+    AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor)
+from sklearn.neural_network import MLPRegressor
+from sklearn.isotonic import IsotonicRegression
+from sklearn.decomposition import PCA
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
@@ -192,5 +209,99 @@ class Base():
 
         if model_name in _param_dist:
             return _param_dist[model_name]
+        else:
+            return None
+
+    @staticmethod
+    def get_basic_pipeline(model_name):
+        """ Returns a basic pipeline setup based upon the model name
+        Parameters:
+            model_name(str): Name of the model from `model.__class__.__name__`
+        """
+        _pipeline = {
+            'AdaBoostRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('ada_boost_regression', AdaBoostRegressor())
+            ]),
+            'ARDRegression': Pipeline([
+                ('scaler', StandardScaler()),
+                ('ard_regression', ARDRegression())
+            ]),
+            'BayesianRidge': Pipeline([
+                ('scaler', StandardScaler()),
+                ('bayesian_ridge', BayesianRidge())
+            ]),
+            'DecisionTreeRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('decision_tree', DecisionTreeRegressor())
+            ]),
+            'ElasticNet': Pipeline([
+                ('scaler', StandardScaler()),
+                ('elastic_net', ElasticNet())
+            ]),
+            'ExtraTreesRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('extra_tree_regressor', ExtraTreesRegressor())
+            ]),
+            'GradientBoostingRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('GPR', GradientBoostingRegressor())
+            ]),
+            'KNeighborsRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('knn_regressor', KNeighborsRegressor())
+            ]),
+            'HuberRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('hubber_regressor', HuberRegressor(epsilon=1.35))
+            ]),
+            'Lars': Pipeline([
+                ('scaler', StandardScaler()),
+                ('LARS', Lars())
+            ]),
+            'Lasso': Pipeline([
+                ('scaler', StandardScaler()),
+                ('lasso', Lasso())
+            ]),
+            'LassoLars': Pipeline([
+                ('scaler', StandardScaler()),
+                ('lasso_lars', LassoLars())
+            ]),
+            'MLPRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('mlp_regressor', MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam'))
+            ]),
+            'OrthogonalMatchingPursuit': Pipeline([
+                ('scaler', StandardScaler()),
+                ('orthogonal_matching_pursuit', OrthogonalMatchingPursuit())
+            ]),
+            'PassiveAggressiveRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('passive_aggressive_regressor', PassiveAggressiveRegressor())
+            ]),
+            'RandomForestRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('random_forest', RandomForestRegressor())
+            ]),
+            'Ridge': Pipeline([
+                ('scaler', StandardScaler()),
+                ('ridge', Ridge())
+            ]),
+            'SGDRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('sgr_regressor', SGDRegressor())
+            ]),
+            'SVR': Pipeline([
+                ('scaler', StandardScaler()),
+                ('svr', SVR())
+            ]),
+            'TheilSenRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('theil_sen', TheilSenRegressor())
+            ])
+        }
+
+        if model_name in _pipeline:
+            return _pipeline[model_name]
         else:
             return None
