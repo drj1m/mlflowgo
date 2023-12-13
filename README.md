@@ -30,3 +30,20 @@ mlflow_go.run_experiment(pipeline=model,
                          y=data['target'])
 ```
 
+**Not sure which model to run?** - No problem
+
+`mlflowgo` can quickly identify and "battle" the top contenders to find the best solution, just drop the `pipeline` argument:
+
+``` python
+iris = datasets.load_iris()
+data = pd.DataFrame(
+    data=np.c_[iris['data'],
+               iris['target']],
+    columns=np.append(iris['feature_names'], ['target'])
+)
+
+mlflow_go = MLFlowGo(experiment_name="Iris_Classification_Experiment")
+
+mlflow_go.run_experiment(X=data.drop(columns=['target']),
+                         y=data['target'])
+```

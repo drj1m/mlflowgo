@@ -1,6 +1,8 @@
 from .artifact_logger import ArtifactLogger
-from .artifact_base import ArtifactBase
+from .tournament import Tournament
 import mlflow
+from sklearn.svm import SVC, SVR
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 
@@ -9,7 +11,7 @@ class Regressor(ArtifactLogger):
     """ A class to handle logging artifacts to MLFlow for regression model
     """
 
-    def __init__(self, base: ArtifactBase):
+    def __init__(self, base: Tournament):
         super().__init__()
         self.base = base
 
@@ -62,7 +64,7 @@ class Regressor(ArtifactLogger):
                                  self.base.X_train,
                                  self.base.y_train,
                                  cv=5,
-                                 scoring=self.base.metric)
+                                 scoring='neg_mean_squared_error')
 
         # Log validation curve
         if self.base.param_name is not None and self.base.param_range is not None:
@@ -72,7 +74,7 @@ class Regressor(ArtifactLogger):
                                       param_name=f'{self.base.model_step}__{self.base.param_name}',
                                       param_range=self.base.param_range,
                                       cv=5,
-                                      scoring=self.base.metric)
+                                      scoring='neg_mean_squared_error')
 
         # Log feature importance
         if hasattr(self.base.pipeline.named_steps[self.base.model_step], 'feature_importances_'):
@@ -81,15 +83,17 @@ class Regressor(ArtifactLogger):
                                         self.base.feature_names)
 
         # Log SHAP
-        self.log_shap_summary_plot(self.base.pipeline,
-                                   self.base.model_step,
-                                   self.base.X_train)
-        self.log_shap_partial_dependence_plot(self.base.pipeline,
-                                              self.base.model_step,
-                                              self.base.X_train)
-        self.log_regression_shap_scatter_plot(self.base.pipeline,
-                                              self.base.model_step,
-                                              self.base.X_train)
+        if not isinstance(self.base.pipeline.named_steps[self.base.model_step],
+                          (SVC, SVR, MLPClassifier, MLPRegressor)):
+            self.log_shap_summary_plot(self.base.pipeline,
+                                       self.base.model_step,
+                                       self.base.X_train)
+            self.log_shap_partial_dependence_plot(self.base.pipeline,
+                                                  self.base.model_step,
+                                                  self.base.X_train)
+            self.log_regression_shap_scatter_plot(self.base.pipeline,
+                                                  self.base.model_step,
+                                                  self.base.X_train)
 
     def _generate_regression_experiment_summary(self):
         """
