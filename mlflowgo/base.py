@@ -1,19 +1,21 @@
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis, LinearDiscriminantAnalysis
 from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
-    TheilSenRegressor, RANSACRegressor)
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.gaussian_process import GaussianProcessRegressor
+    TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.gaussian_process import GaussianProcessRegressor, GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.svm import SVR, SVC
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
-    AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor)
-from sklearn.neural_network import MLPRegressor
+    AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
+from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.isotonic import IsotonicRegression
 from sklearn.decomposition import PCA
 from sklearn.base import is_classifier
@@ -101,6 +103,8 @@ class Base():
 
         if metrics is None:
             return self._get_default_metrics(task_type)
+        else:
+            return metrics
 
     @staticmethod
     def get_param_dist(model_name):
@@ -166,6 +170,10 @@ class Base():
             'LassoLars': {
                 "alpha": uniform(0.01, 10)
             },
+            'LinearRegression': {
+                'fit_intercept': [True, False],
+                'positive': [True, False]
+            },
             'MLPRegressor': {
                 "hidden_layer_sizes": [(50,), (100,), (50, 50), (100, 50)],
                 "activation": ['tanh', 'relu'],
@@ -204,6 +212,77 @@ class Base():
             },
             'TheilSenRegressor': {
                 "max_subpopulation": sp_randint(10, 500)
+            },
+            'AdaBoostClassifier': {
+                "n_estimators": sp_randint(50, 500),
+                "learning_rate": uniform(0.01, 1.0)
+            },
+            'DecisionTreeClassifier': {
+                "max_depth": [None, 10, 20, 30, 40],
+                "min_samples_split": sp_randint(2, 10),
+                "min_samples_leaf": sp_randint(1, 10)
+            },
+            'ExtraTreesClassifier': {
+                "n_estimators": sp_randint(100, 500),
+                "max_depth": [None, 10, 20, 30],
+                "min_samples_split": sp_randint(2, 10),
+                "min_samples_leaf": sp_randint(1, 10),
+                "bootstrap": [True, False]
+            },
+            'GradientBoostingClassifier': {
+                "n_estimators": sp_randint(100, 500),
+                "learning_rate": uniform(0.01, 0.2),
+                "max_depth": sp_randint(3, 10)
+            },
+            'KNeighborsClassifier': {
+                "n_neighbors": sp_randint(1, 30),
+                "weights": ['uniform', 'distance'],
+                "algorithm": ['auto', 'ball_tree', 'kd_tree', 'brute']
+            },
+            'LinearDiscriminantAnalysis': {
+                "solver": ['svd', 'lsqr', 'eigen']
+            },
+            'LogisticRegression': {
+                "C": uniform(0.1, 10),
+                "penalty": ['l2', 'l1', 'elasticnet'],
+                "solver": ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']
+            },
+            'MLPClassifier': {
+                "hidden_layer_sizes": [(50,), (100,), (50, 50), (100, 50)],
+                "activation": ['tanh', 'relu'],
+                "solver": ['sgd', 'adam'],
+                "alpha": uniform(0.0001, 0.05),
+                "learning_rate": ['constant', 'adaptive']
+            },
+            'Perceptron': {
+                "penalty": [None, 'l2', 'l1', 'elasticnet'],
+                "alpha": uniform(0.0001, 0.01),
+                "max_iter": sp_randint(1000, 5000),
+                "eta0": uniform(0.1, 1)
+            },
+            'QuadraticDiscriminantAnalysis': {
+                "reg_param": uniform(0, 1)
+            },
+            'RandomForestClassifier': {
+                "n_estimators": sp_randint(10, 200),
+                "max_depth": [None, 10, 20, 30],
+                "min_samples_split": sp_randint(2, 11),
+                "min_samples_leaf": sp_randint(1, 11),
+                "bootstrap": [True, False]
+            },
+            'RidgeClassifier': {
+                "alpha": uniform(0.1, 10),
+                "solver": ['auto', 'svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
+            },
+            'SGDClassifier': {
+                "max_iter": sp_randint(1000, 5000),
+                "tol": uniform(1e-4, 1e-1),
+                "penalty": ['l2', 'l1', 'elasticnet'],
+                "alpha": uniform(0.0001, 0.1)
+            },
+            'SVC': {
+                "C": uniform(0.1, 10),
+                "kernel": ['linear', 'poly', 'rbf', 'sigmoid']
             }
         }
 
@@ -267,6 +346,10 @@ class Base():
                 ('scaler', StandardScaler()),
                 ('lasso_lars', LassoLars())
             ]),
+            'LinearRegression': Pipeline([
+                ('scaler', StandardScaler()),
+                ('linear_regression', LinearRegression())
+            ]),
             'MLPRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('mlp_regressor', MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam'))
@@ -298,6 +381,57 @@ class Base():
             'TheilSenRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('theil_sen', TheilSenRegressor())
+            ]),
+            'AdaBoostClassifier': Pipeline([
+                ('ada_boost', AdaBoostClassifier())
+            ]),
+            'DecisionTreeClassifier': Pipeline([
+                ('decision_tree', DecisionTreeClassifier())
+            ]),
+            'ExtraTreesClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('extra_trees', ExtraTreesClassifier(n_estimators=100, max_depth=None))
+            ]),
+            'GradientBoostingClassifier': Pipeline([
+                ('GBC', GradientBoostingClassifier())
+            ]),
+            'KNeighborsClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('KNNC', KNeighborsClassifier())
+            ]),
+            'LinearDiscriminantAnalysis': Pipeline([
+                ('scaler', StandardScaler()),
+                ('lda', LinearDiscriminantAnalysis())
+            ]),
+            'LogisticRegression': Pipeline([
+                ('scaler', StandardScaler()),
+                ('logistic_regression', LogisticRegression())
+            ]),
+            'MLPClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('MLP', MLPClassifier())
+            ]),
+            'Perceptron': Pipeline([
+                ('scaler', StandardScaler()),
+                ('perceptron', Perceptron(max_iter=1000, tol=1e-3, eta0=1.0, penalty='l2'))
+            ]),
+            'QuadraticDiscriminantAnalysis': Pipeline([
+                ('QDA', QuadraticDiscriminantAnalysis())
+            ]),
+            'RandomForestClassifier': Pipeline([
+                ('RF', RandomForestClassifier())
+            ]),
+            'RidgeClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('ridge_classifier', RidgeClassifier(alpha=1.0))
+            ]),
+            'SGDClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('sgd_classifier', SGDClassifier(loss='hinge', penalty='l2', alpha=0.0001, max_iter=1000, tol=1e-3))
+            ]),
+            'SVC': Pipeline([
+                ('scaler', StandardScaler()),
+                ('SVC', SVC(probability=True))
             ])
         }
 
