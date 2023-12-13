@@ -1,5 +1,5 @@
 from .artifact_logger import ArtifactLogger
-from .artifact_base import ArtifactBase
+from .tournament import Tournament
 import mlflow
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score, confusion_matrix)
@@ -10,7 +10,7 @@ class Classifier(ArtifactLogger):
     """ A class to handle logging artifacts to MLFlow for classification model
     """
 
-    def __init__(self, base: ArtifactBase):
+    def __init__(self, base: Tournament):
         super().__init__()
         self.base = base
 
@@ -55,7 +55,7 @@ class Classifier(ArtifactLogger):
                                  self.base.X_train,
                                  self.base.y_train,
                                  cv=5,
-                                 scoring=self.base.metric)
+                                 scoring='f1_weighted')
 
         # Log validation curve
         if self.base.param_name is not None and self.base.param_range is not None:
@@ -65,7 +65,7 @@ class Classifier(ArtifactLogger):
                                       param_name=f'{self.base.model_step}__{self.base.param_name}',
                                       param_range=self.base.param_range,
                                       cv=5,
-                                      scoring=self.base.metric)
+                                      scoring='f1_weighted')
 
         # Log feature importance
         if hasattr(self.base.pipeline.named_steps[self.base.model_step], 'feature_importances_'):
