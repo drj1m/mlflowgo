@@ -31,6 +31,7 @@ mlflow_go.run_experiment(pipeline=model,
 ```
 
 **Not sure which model to run?** - No problem
+
 `mlflowgo` can quickly identify and "battle" the top contenders to find the best solution. Consider the below code:
 
 ``` python
