@@ -32,7 +32,7 @@ mlflow_go.run_experiment(pipeline=model,
 
 **Not sure which model to run?** - No problem
 
-`mlflowgo` can quickly identify and "battle" the top contenders to find the best solution. Consider the below code:
+`mlflowgo` can quickly identify and "battle" the top contenders to find the best solution, just drop the `pipeline` argument:
 
 ``` python
 iris = datasets.load_iris()
