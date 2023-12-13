@@ -2,11 +2,12 @@ from .artifact_base import ArtifactBase
 from .regressor import Regressor
 from .classifier import Classifier
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
-from .base import Base
+from .tournament import Tournament
 import mlflow
 import mlflow.sklearn
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import cross_val_score, train_test_split, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
+from sklearn import metrics as sklm
 import subprocess
 import threading
 import webbrowser
@@ -16,7 +17,7 @@ import pandas as pd
 import numpy as np
 
 
-class MLFlowGo(Base):
+class MLFlowGo():
     """
     A class to integrate MLFlow with scikit-learn pipelines for data scientists.
 
@@ -41,7 +42,7 @@ class MLFlowGo(Base):
             mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment(experiment_name)
 
-    def run_experiment(self, pipeline: Pipeline, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, **kwargs):
+    def run_experiment(self, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, pipeline: Pipeline = None, grid_search=False, register=False, **kwargs):
         """
         Runs a cross-validation experiment with the given pipeline and data, logs the metrics and model in MLFlow.
 
@@ -54,90 +55,96 @@ class MLFlowGo(Base):
             **kwargs: Additional keyword arguments for cross_val_score function.
         """
 
-        if not isinstance(pipeline, (list, tuple, np.ndarray)):
-            pipeline = [pipeline]
-
-        for _pipeline in pipeline:
-            self.pipeline, self.task_type = self.get_pipeline(
-                _pipeline,
-                kwargs.get('task_type', None))
-            self.metrics = self.get_model_metrics(
-                kwargs.get('metrics', None),
-                self.task_type)
-            self.feature_names = self.get_feature_names(
-                kwargs.get('feature_names', None),
-                X.columns
-            )
-            self.param_name = kwargs.get('param_name', None)
-            self.param_range = kwargs.get('param_range', None)
-            self.objective = kwargs.get('objective', None)
-            self.dataset_desc = kwargs.get('dataset_desc', None)
-
-            self.model_step = self.get_model_step_from_pipeline(self.pipeline)
-            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+        X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.33)
 
-            with mlflow.start_run(run_name=self.get_run_name(self.pipeline)):
-                # Perform cross-validation
-                if cv != -1:
-                    cv_results = [cross_val_score(
-                        self.pipeline,
-                        self.X_train,
-                        self.y_train,
-                        cv=cv,
-                        scoring=m) for m in self.metrics]
-                else:
-                    cv_results = None
+        tournament = Tournament(
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            y_test=y_test,
+            pipelines=pipeline
+        )
+
+        for _pipeline in tournament.pipelines:
+
+            with mlflow.start_run(run_name=tournament.get_run_name(_pipeline)) as run:
+
+                tournament.run(
+                    run_id=run.info.run_id,
+                    pipeline=_pipeline,
+                    grid_search=False,
+                    cv=-1)
 
                 # Log parameters, metrics, and model
-                self._log_params()
-                if cv_results is not None: self._log_metrics(cv_results, self.metrics)
-                self._log_artifacts()
-                mlflow.sklearn.log_model(self.pipeline,
-                                         self.model_step)
+                self._log_params(tournament.pipeline)
+                self._log_metrics(
+                    tournament.y_test,
+                    tournament.pipeline.predict(tournament.X_test),
+                    tournament.metrics,
+                    tournament.task_type
+                )
+                self._log_artifacts(tournament)
+                mlflow.sklearn.log_model(tournament.pipeline,
+                                         tournament.model_name)
 
-    def _log_artifacts(self):
+        best_model_name = min(tournament.final_scores, key=tournament.final_scores.get)
+        print(f"Optimal model: {best_model_name}")
+        if register:
+            model_uri = f"runs:/{tournament.model_info[best_model_name][0]}/{tournament.model_info[best_model_name][1]}"
+            mlflow.register_model(model_uri, best_model_name)
+
+    def _log_artifacts(self, tournament):
         """
         Log all relevant artifacts for the experiment
         """
 
-        base = ArtifactBase(
-            pipeline=self.pipeline.fit(self.X_train, self.y_train),
-            X_train=self.X_train,
-            X_test=self.X_test,
-            y_train=self.y_train,
-            y_test=self.y_test,
-            model_step=self.model_step,
-            feature_names=self.feature_names,
-            metric=self.metrics[0],
-            param_name=self.param_name,
-            param_range=self.param_range,
-            objective=self.objective,
-            dataset_desc=self.dataset_desc
-        )
-
-        if self.task_type == REGRESSOR_KEY:
-            artifact_logger = Regressor(base)
-        elif self.task_type == CLASSIFIER_KEY:
-            artifact_logger = Classifier(base)
+        if tournament.task_type == REGRESSOR_KEY:
+            artifact_logger = Regressor(tournament)
+        elif tournament.task_type == CLASSIFIER_KEY:
+            artifact_logger = Classifier(tournament)
 
         artifact_logger.log()
 
-    def _log_params(self):
+    def _log_params(self, pipeline):
         """
         Logs the parameters of the model or pipeline.
         """
-        if isinstance(self.pipeline, Pipeline):
-            params = self.pipeline.get_params()
+        if isinstance(pipeline, Pipeline):
+            params = pipeline.get_params()
         else:
-            params = self.pipeline.__dict__
+            params = pipeline.__dict__
         mlflow.log_params(params)
 
-    def _log_metrics(self, cv_results, metrics):
+    def _log_metrics(self, y_true, y_pred, metrics, task_type):
         """Logs the metrics from cross-validation results."""
-        for idx, metric in enumerate(metrics):
-            mlflow.log_metric(f"mean_{metric}", cv_results[idx].mean())
-            mlflow.log_metric(f"std_{metric}", cv_results[idx].std())
+        if task_type == REGRESSOR_KEY:
+            metric_func = {
+                'max_error': lambda y_true, y_pred: sklm.max_error(y_true, y_pred),
+                'neg_median_absolute_error': lambda y_true, y_pred: sklm.median_absolute_error(y_true, y_pred),
+                'neg_mean_absolute_error': lambda y_true, y_pred: sklm.mean_absolute_error(y_true, y_pred),
+                'neg_mean_absolute_percentage_error': lambda y_true, y_pred: sklm.mean_absolute_percentage_error(y_true, y_pred),
+                'neg_mean_squared_error': lambda y_true, y_pred: sklm.mean_squared_error(y_true, y_pred),
+                'neg_mean_squared_log_error': lambda y_true, y_pred: sklm.mean_squared_log_error(y_true, y_pred),
+                'neg_root_mean_squared_error': lambda y_true, y_pred: sklm.mean_squared_error(y_true, y_pred, squared=False)
+            }
+        elif task_type == CLASSIFIER_KEY:
+            metric_func = {
+                'accuracy': lambda y_true, y_pred: sklm.accuracy_score(y_true, y_pred),
+                'precision': lambda y_true, y_pred: sklm.precision_score(y_true, y_pred, average='weighted'),
+                'recall': lambda y_true, y_pred: sklm.recall_score(y_true, y_pred, average='weighted'),
+                'f1_score': lambda y_true, y_pred: sklm.f1_score(y_true, y_pred, average='weighted'),
+                'roc_auc_score': lambda y_true, y_pred: sklm.roc_auc_score(y_true, y_pred, average='macro', multi_class='ovr'),
+                'balanced_accuracy': lambda y_true, y_pred: sklm.balanced_accuracy_score(y_true, y_pred),
+                'jaccard_score': lambda y_true, y_pred: sklm.jaccard_score(y_true, y_pred, average='weighted'),
+                'log_loss': lambda y_true, y_pred: sklm.log_loss(y_true, y_pred),
+                'precision_recall_fscore_support': lambda y_true, y_pred: sklm.precision_recall_fscore_support(y_true, y_pred, average='weighted')
+            }
+
+        for metric_name in metrics:
+            if metric_name in metric_func:
+                result = metric_func[metric_name](y_true, y_pred)
+                mlflow.log_metric(f"{metric_name}", result)
 
     def run_mlflow_ui(self, port=5000, open_browser=True):
         """
