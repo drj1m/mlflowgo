@@ -482,9 +482,8 @@ class ArtifactLogger:
         """
 
         explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
-
+        shap_values = explainer(X)
         for idx in range(X.shape[1]):
-            shap_values = explainer(X)
             try:
                 shap.plots.scatter(shap_values[:, idx], show=False)
                 with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}.png", delete=False) as tmp:
@@ -506,10 +505,9 @@ class ArtifactLogger:
         """
         model = pipeline.named_steps[model_step]
         explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
-
+        shap_values = explainer(X)
         for class_idx in range(len(model.classes_)):
-            for idx in range(X.shape[1]):
-                shap_values = explainer(X)
+            for idx in range(X.shape[1]): 
                 try:
                     shap.plots.scatter(shap_values[:, idx][:, class_idx], show=False)
                     with tempfile.NamedTemporaryFile(suffix=f"__{X.columns.values[idx]}_class {model.classes_[class_idx]}.png", delete=False) as tmp:
