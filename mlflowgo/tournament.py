@@ -50,6 +50,15 @@ class Tournament(Base):
         return CLASSIFIER_KEY if is_classifier(self.pipeline) else REGRESSOR_KEY
 
     def run_name(self, pipeline):
+        """
+        Return the run name based on the given pipeline.
+
+        Parameters:
+            pipeline (Pipeline): The pipeline for which the run name is generated.
+
+        Returns:
+            str: A string representing the generated run name.
+        """
         return self.get_run_name(pipeline)
 
     def run(self, run_id, pipeline, cv, grid_search=False):
