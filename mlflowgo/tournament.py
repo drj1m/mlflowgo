@@ -62,6 +62,15 @@ class Tournament(Base):
         return self.get_run_name(pipeline)
 
     def run(self, run_id, pipeline, cv, grid_search=False):
+        """
+        Run a machine learning pipeline with optional grid search and cross-validation.
+
+        Parameters:
+            run_id (str): An identifier for the current run.
+            pipeline (Pipeline): The machine learning pipeline to be executed.
+            cv (int): The number of cross-validation folds. Use -1 for no cross-validation.
+            grid_search (bool, optional): Whether to perform grid search for hyperparameter tuning (default is False).
+        """
         self.pipeline = pipeline
         self.metrics = self.get_model_metrics(
             self.metrics,
