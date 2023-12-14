@@ -83,8 +83,8 @@ class MLFlowGo():
                 tournament.run(
                     run_id=run.info.run_id,
                     pipeline=_pipeline,
-                    grid_search=False,
-                    cv=-1)
+                    grid_search=grid_search,
+                    cv=cv)
 
                 # Log parameters, metrics, and model
                 self._log_params(tournament.pipeline)
