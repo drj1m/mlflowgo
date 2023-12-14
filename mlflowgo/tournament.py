@@ -112,7 +112,11 @@ class Tournament(Base):
         self.model_info[self.model_name] = (run_id, self.model_name)
 
     def _find_best_models(self):
-        """ Use lazypredict to find the best models to evaluate
+        """
+        Find and return the top-performing machine learning models for the dataset.
+
+        Returns:
+            List[Pipeline]: A list of the top-performing machine learning pipelines.
         """
         final_models = []
         top_n = 5
