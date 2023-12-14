@@ -1,11 +1,10 @@
-from .artifact_base import ArtifactBase
 from .regressor import Regressor
 from .classifier import Classifier
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
 from .tournament import Tournament
 import mlflow
 import mlflow.sklearn
-from sklearn.model_selection import cross_val_score, train_test_split, RandomizedSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn import metrics as sklm
 import subprocess
@@ -14,7 +13,6 @@ import webbrowser
 import requests
 import time
 import pandas as pd
-import numpy as np
 
 
 class MLFlowGo():
