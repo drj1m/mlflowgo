@@ -144,7 +144,23 @@ class Tournament(Base):
         return final_models
 
     def _pipeline_array_to_dict(self):
-        """ Converts a pipeline of models to dict
+        """
+        Convert an array of machine learning pipelines into dictionaries for models and parameters.
+
+        This method iterates over an array of machine learning pipelines and converts them into
+        dictionaries where keys represent model names and values are the corresponding pipelines.
+        Additionally, parameter dictionaries for each model are created and stored.
+
+        Returns:
+            None
+
+        For each pipeline in the `pipelines` array, the method performs the following steps:
+        1. Retrieves the model step from the pipeline.
+        2. Obtains the model's class name.
+        3. Fetches the parameter distribution for the model using the `get_param_dist` method.
+        4. Stores the model-pipeline mapping in the `models` dictionary.
+        5. If model parameters are available, they are converted into a dictionary with modified keys
+        to include the model step and stored in the `models_params` dictionary.
         """
         for pipeline in self.pipelines:
             model_step = self.get_model_step_from_pipeline(pipeline)
