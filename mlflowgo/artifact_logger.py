@@ -189,14 +189,28 @@ class ArtifactLogger:
 
     def _log_calibration_plot_one_vs_rest(self, pipeline, X, y, n_bins=10, strategy='uniform'):
         """
-        Generates and logs a one-vs-rest calibration plot as an MLflow artifact for multi-class data.
+        Generate and log a calibration plot for binary or multi-class classification.
+
+        This function determines whether to generate a calibration plot for binary classification or multi-class classification based on the number of unique class labels and logs it as an MLflow artifact.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
         y (pd.DataFrame): Target values.
-        n_bins(int default=10): The number of bins to use for calibration.
-        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        n_bins (int, optional): The number of bins to use for calibration. Default is 10.
+        strategy (str, optional): The strategy used to define the widths of the bins. Options are 'uniform' (default) or 'quantile'.
+
+        Notes:
+        - The calibration plot shows the relationship between predicted probabilities and the true frequency of positive outcomes.
+        - For binary classification, it uses the isotonic regression method.
+        - For multi-class classification, it generates a calibration plot for each class (one-vs-rest).
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier.log_calibration_plot(pipeline, X_test, y_test, n_bins=20, strategy='uniform')
+        ```
+
         """
         classes = np.unique(y)
         plt.figure(figsize=(8, 6))
