@@ -91,16 +91,29 @@ class ArtifactLogger:
 
     def log_validation_curve(self, pipeline, X, y, param_name, param_range, cv, scoring):
         """
-        Generates and logs validation curve plot as an MLflow artifact.
+        Generate and log a validation curve plot as an MLflow artifact.
+
+        This function generates a validation curve plot for a specified hyperparameter, varying its values, and logs it as an MLflow artifact.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
         y (pd.DataFrame): Target values.
-        param_name(str): Name of the parameter to vary.
-        param_range (array-like): The values of the parameter that will be evaluated.
-        cv (int, optional): Number of cross-validation splits.
-        scoring(str): A str (see model evaluation documentation) or a scorer callable object/function.
+        param_name (str): Name of the hyperparameter to vary.
+        param_range (array-like): The values of the hyperparameter that will be evaluated.
+        cv (int): Number of cross-validation splits.
+        scoring (str or callable): A scoring metric for evaluation. Refer to scikit-learn's model evaluation documentation.
+
+        Notes:
+        - The validation curve is computed by varying a hyperparameter of the model and evaluating its impact on model performance.
+        - The generated plot shows the training score and cross-validation score for different values of the specified hyperparameter.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier.log_validation_curve(pipeline, X_train, y_train, param_name='max_depth', param_range=[3, 5, 7, 10], cv=5, scoring='f1_weighted')
+        ```
+
         """
         train_scores, test_scores = validation_curve(
             pipeline,
