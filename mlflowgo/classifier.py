@@ -2,22 +2,43 @@ from .artifact_logger import ArtifactLogger
 from .tournament import Tournament
 import mlflow
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score, confusion_matrix)
-import numpy as np
+    accuracy_score, precision_score, recall_score, f1_score)
 
 
 class Classifier(ArtifactLogger):
-    """ A class to handle logging artifacts to MLFlow for classification model
     """
+    Classifier class for logging classification-specific artifacts and metrics to MLflow.
 
+    This class extends the ArtifactLogger class to provide methods for logging classification-specific artifacts
+    and metrics to MLflow during a machine learning experiment.
+
+    Attributes:
+        base (Tournament): The Tournament instance containing the experiment information.
+    """
     def __init__(self, base: Tournament):
+        """
+        Initialize a Classifier instance.
+
+        Args:
+            base (Tournament): The Tournament instance containing the experiment information.
+
+        Returns:
+            None
+        """
         super().__init__()
         self.base = base
 
     def log(self):
-        """ Log artifacts to MLFlow
         """
-        
+        Log classification-specific artifacts and metrics to MLflow.
+
+        This method logs classification-specific artifacts and metrics to MLflow, including ROC curve, precision-recall
+        curve, calibration plot, confusion matrix, classification report, data sample, learning curve, validation curve,
+        feature importance, SHAP plots, and experiment summary.
+
+        Returns:
+            None
+        """
         y_pred = self.base.pipeline.predict(self.base.X_test)
 
         if hasattr(self.base.pipeline.named_steps[self.base.model_step], 'predict_proba'):
@@ -89,28 +110,28 @@ class Classifier(ArtifactLogger):
 
     def _generate_classification_experiment_summary(self):
         """
-        Generates and updates an MLflow experiment summary based on a classification pipeline.
+        Generate a summary of the classification experiment.
 
-        Parameters:
-        pipeline: sklearn.pipeline.Pipeline
-                The classification pipeline used in the experiment.
+        This method generates a summary of the classification experiment, including key findings and conclusions
+        based on performance metrics.
 
-        X_train, y_train: Training dataset.
-
-        X_test, y_test: Test dataset.
-
-        experiment_id: str
-                    The ID of the MLflow experiment.
-
-        objective: str
-                The objective of the experiment.
-
-        dataset_desc: str
-                    Description of the dataset used.
+        Returns:
+            None
         """
         def analyse_classification_results(performance_metrics):
             """
-            Analyse classification performance metrics to generate key findings.
+            Analyze classification results and provide key findings.
+
+            This function analyzes classification results based on performance metrics such as train accuracy and test accuracy.
+            It provides key findings based on the comparison between these metrics, helping to identify potential issues
+            like overfitting or exceptional performance.
+
+            Args:
+                performance_metrics (dict): A dictionary containing performance metrics, including 'Train Accuracy'
+                    and 'Test Accuracy'.
+
+            Returns:
+                str: A string summarizing the key findings based on the analysis of performance metrics.
             """
             train_accuracy = performance_metrics['Train Accuracy']
             test_accuracy = performance_metrics['Test Accuracy']
@@ -123,7 +144,17 @@ class Classifier(ArtifactLogger):
 
         def generate_classification_conclusions(performance_metrics):
             """
-            Generate dynamic conclusions based on classification performance metrics.
+            Generate conclusions based on classification performance metrics.
+
+            This function generates conclusions based on classification performance metrics such as precision and recall.
+            It assesses whether the model struggles with precision and recall or exhibits a balanced performance.
+
+            Args:
+                performance_metrics (dict): A dictionary containing performance metrics, including 'Test Precision'
+                    and 'Test Recall'.
+
+            Returns:
+                str: A string providing conclusions based on the analysis of classification performance metrics.
             """
             test_precision = performance_metrics['Test Precision']
             test_recall = performance_metrics['Test Recall']
