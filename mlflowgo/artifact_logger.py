@@ -19,9 +19,6 @@ import tempfile
 class ArtifactLogger:
     """
     A class to create and log artifacts.
-
-    Methods:
-        log_artifact(self, local_path, artifact_path=None): Logs the artifact for the run.
     """
 
     def __init__(self):
@@ -29,14 +26,28 @@ class ArtifactLogger:
 
     def log_learning_curves(self, pipeline, X, y, cv, scoring):
         """
-        Generates and logs learning curve plot as an MLflow artifact.
+        Generate and log learning curve plots as MLflow artifacts.
+
+        This function generates learning curve plots for a given scikit-learn pipeline and logs them as MLflow artifacts.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
         y (pd.DataFrame): Target values.
-        cv (int, optional): Number of cross-validation splits.
-        scoring(str): A str (see model evaluation documentation) or a scorer callable object/function.
+        cv (int): Number of cross-validation splits.
+        scoring (str or callable): A scoring metric for evaluation. Refer to scikit-learn's model evaluation documentation.
+
+        Notes:
+        - The learning curves are computed using cross-validation.
+        - Learning curves provide insights into model performance as training data size increases.
+        - The generated plots show the training score and cross-validation score with varying training dataset sizes.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier.log_learning_curves(pipeline, X_train, y_train, cv=5, scoring='f1_weighted')
+        ```
+
         """
         train_sizes, train_scores, test_scores = learning_curve(
             pipeline,
