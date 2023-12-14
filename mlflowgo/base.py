@@ -7,17 +7,12 @@ from sklearn.linear_model import (
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.gaussian_process import GaussianProcessRegressor, GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
 from sklearn.neural_network import MLPRegressor, MLPClassifier
-from sklearn.isotonic import IsotonicRegression
-from sklearn.decomposition import PCA
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
