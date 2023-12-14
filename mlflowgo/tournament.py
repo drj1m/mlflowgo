@@ -1,21 +1,58 @@
 from .base import Base
 from lazypredict.Supervised import LazyRegressor, LazyClassifier
 from sklearn.model_selection import RandomizedSearchCV, cross_val_score
-from sklearn.metrics import mean_squared_error
 import numpy as np
 from sklearn.base import is_classifier
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
 import sklearn.metrics as sklm
-import mlflow
 
 
 class Tournament(Base):
     """
-    A class to run a tournament style selection to finding the best model, logging to MLflow
+    Tournament class for machine learning model evaluation and selection.
+
+    This class extends the `Base` class and provides functionality for running machine learning pipelines,
+    selecting top-performing models, and managing model information and parameters.
+
+    Parameters:
+        X_train (pd.DataFrame, optional): The training feature data (default is None).
+        y_train (pd.Series, optional): The training target data (default is None).
+        X_test (pd.DataFrame, optional): The test feature data (default is None).
+        y_test (pd.Series, optional): The test target data (default is None).
+        pipelines (list or None, optional): A list of machine learning pipelines or None to auto-generate (default is None).
+        feature_names (list, optional): List of feature names (default is derived from X_train columns).
+        metrics (dict or None, optional): Dictionary of metrics for model evaluation (default is None).
+        param_name (str, optional): The name of the hyperparameter to tune (default is None).
+        param_range (list, optional): The range of hyperparameter values for tuning (default is None).
+        objective (str, optional): The objective of the experiment (default is None).
+        dataset_desc (str, optional): Description of the dataset (default is None).
+
+    Attributes:
+        models (dict): Dictionary to store machine learning models with model names as keys.
+        models_params (dict): Dictionary to store model parameters with model names as keys.
+        final_scores (dict): Dictionary to store final model evaluation scores.
+        model_info (dict): Dictionary to store model information.
+        pipelines (list): List of machine learning pipelines.
+        feature_names (list): List of feature names.
+        metrics (dict): Dictionary of metrics for model evaluation.
+        param_name (str): The name of the hyperparameter to tune.
+        param_range (list): The range of hyperparameter values for tuning.
+        objective (str): The objective of the experiment.
+        dataset_desc (str): Description of the dataset.
     """
-
     def __init__(self, **kwargs):
+        """
+        Initialize a Tournament instance.
 
+        Initializes the Tournament instance with optional parameters for training and testing data,
+        pipelines, and other experiment-specific information.
+
+        Args:
+            **kwargs: Keyword arguments for specifying instance parameters.
+
+        Returns:
+            None
+        """
         self.models = {}
         self.models_params = {}
         self.final_scores = {}
