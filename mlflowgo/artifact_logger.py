@@ -756,12 +756,31 @@ class ArtifactLogger:
 
     def log_confusion_matrix(self, y_true, y_pred):
         """
-        Logs confusion matrix as an MLflow artifact.
+        Logs a confusion matrix plot as an MLflow artifact.
+
+        This function generates and logs a confusion matrix plot, which is a valuable tool for evaluating the performance
+        of classification models. The confusion matrix visualizes the number of true positive, true negative, false
+        positive, and false negative predictions made by a classifier.
 
         Parameters:
         y_true (array-like): The true values for y.
 
-        y_pred (array-like): The prediction values for y.
+        y_pred (array-like): The predicted values for y.
+
+        Example:
+        ```python
+        classifier = ClassificationPipeline()
+        classifier.fit(X_train, y_train)
+        y_pred = classifier.predict(X_test)
+        classifier.log_confusion_matrix(y_test, y_pred)
+        ```
+
+        Notes:
+        - This function requires scikit-learn and matplotlib to be installed.
+        - It generates a confusion matrix plot based on the true and predicted values.
+        - The `y_true` parameter should contain the true target labels.
+        - The `y_pred` parameter should contain the predicted target labels.
+        - The function logs the confusion matrix plot as an MLflow artifact for visualization.
         """
         cm = confusion_matrix(y_true, y_pred)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
