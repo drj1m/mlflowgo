@@ -1007,10 +1007,46 @@ class ArtifactLogger:
         Generates and logs a coefficient plot as an MLflow artifact for linear regression models
         or others with a 'coef_' attribute.
 
+        This function creates a bar plot to visualize the coefficients of features in a linear regression model
+        or other models with a 'coef_' attribute. It helps in understanding the impact and importance of each feature
+        on the model's predictions.
+
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        model_step (str): Step name for the model
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+            The pipeline should contain a model with a 'coef_' attribute (e.g., Linear Regression).
+
+        model_step (str): Step name for the model in the pipeline.
+
         feature_names (list): A list of names for the features corresponding to the coefficients.
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        import pandas as pd
+
+        # Create a pipeline with a linear regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Define feature names
+        feature_names = ['Feature1', 'Feature2', 'Feature3']
+
+        # Log the coefficient plot
+        your_artifact_base.log_coefficient_plot(model, 'regressor', feature_names)
+        ```
+
+        Notes:
+        - The provided `pipeline` should contain a model with a 'coef_' attribute (e.g., Linear Regression).
+        - The bar plot shows the coefficients of each feature, indicating their impact on the model's predictions.
+        - Feature names should be provided to label the x-axis of the plot.
+        - The plot is saved as a temporary file and logged as an MLflow artifact with the label 'Metrics'.
+        - This visualization can help interpret the importance of each feature in the model.
+
+        Raises:
+        - ValueError: If the provided estimator does not have a 'coef_' attribute.
+        - ValueError: If the number of feature names does not match the number of coefficients.
         """
         # Ensure the model has the attribute 'coef_'
         if not hasattr(pipeline.named_steps[model_step], 'coef_'):
