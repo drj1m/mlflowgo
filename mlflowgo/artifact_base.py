@@ -13,6 +13,40 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, ExtraTre
 
 
 class ArtifactBase():
+    """
+    ArtifactBase is a base class for logging various machine learning artifacts to MLflow.
+
+    It provides utility methods for logging different types of artifacts, such as plots, reports, and data samples,
+    to the MLflow tracking server. Subclasses can inherit from this base class and extend its functionality
+    to log specific types of artifacts related to their machine learning workflows.
+
+    Attributes:
+        None
+
+    Methods:
+        - Various methods for logging different types of machine learning artifacts.
+
+    Example:
+    ```python
+    # Import the base class
+    from artifact_base import ArtifactBase
+
+    # Create a subclass and extend its functionality
+    class MyArtifactLogger(ArtifactBase):
+        def __init__(self):
+            super().__init__()
+
+        def log_custom_artifact(self, custom_data):
+            # Implement custom artifact logging logic here
+            pass
+
+    # Create an instance of the subclass
+    artifact_logger = MyArtifactLogger()
+
+    # Use the instance to log various machine learning artifacts
+    artifact_logger.log_custom_artifact(custom_data)
+    ```
+    """
 
     def __init__(self) -> None:
         pass
@@ -20,15 +54,55 @@ class ArtifactBase():
     @classmethod
     def get_shap_explainer(self, pipeline, model_step, X):
         """
-        Determines and returns the appropriate SHAP explainer based on the model type.
+        Determines and returns the appropriate SHAP (SHapley Additive exPlanations) explainer based on the model type.
+
+        SHAP is a unified measure of feature importance that can be used to explain the output of any machine learning model.
+        This method selects the appropriate SHAP explainer based on the type of model provided in the pipeline.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        model_step (str): Step name for the model
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+
+        model_step (str): The name of the step in the pipeline that represents the model.
+
         X (pd.DataFrame): The input features used for SHAP value calculation.
 
         Returns:
-        A SHAP explainer object.
+        tuple: A tuple containing a SHAP explainer object and the input feature DataFrame (X).
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.ensemble import RandomForestClassifier
+        import pandas as pd
+        import shap
+
+        # Create a pipeline with a RandomForestClassifier model
+        model = Pipeline([
+            ('classifier', RandomForestClassifier())
+        ])
+
+        # Generate example data
+        X = pd.DataFrame({'Feature1': [1, 2, 3, 4, 5], 'Feature2': [2, 4, 5, 4, 5]})
+
+        # Get the SHAP explainer
+        explainer, X_transformed = ArtifactBase.get_shap_explainer(model, 'classifier', X)
+        ```
+        
+        Notes:
+        - This method checks the type of the model in the pipeline and selects the appropriate SHAP explainer:
+          - For tree-based models (e.g., RandomForest, DecisionTree), it uses `shap.TreeExplainer`.
+          - For linear models (e.g., LinearRegression, LogisticRegression), it uses `shap.LinearExplainer`.
+          - For other models, it defaults to a `shap.KernelExplainer`.
+
+        - If a transformation step is present before the model, it applies the transformation to the input features (X) before calculating SHAP values.
+
+        - The returned tuple contains the SHAP explainer object and the transformed input features (X), if applicable.
+
+        Raises:
+        - None
+
+        Returns:
+        - A tuple containing a SHAP explainer object and the input feature DataFrame (X).
         """
 
         model = pipeline.named_steps[model_step]
