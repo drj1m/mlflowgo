@@ -293,15 +293,29 @@ class ArtifactLogger:
 
     def log_roc_curve(self, y_true, y_scores, class_names):
         """
-        Determine which function to call to produce a ROC curve.
+        Generate and log a ROC curve as an MLflow artifact.
+
+        This function generates and logs a ROC curve as an MLflow artifact. Depending on the number of unique classes,
+        it can generate either a binary ROC curve for binary classification or a multi-class ROC curve for
+        multi-class classification.
 
         Parameters:
         y_true (array-like): True labels of the data.
-
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
-
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values,
+                            or binary decisions.
         class_names (list): List of class names.
+
+        Notes:
+        - For binary classification, this function generates a binary ROC curve.
+        - For multi-class classification, this function generates a multi-class ROC curve with one curve per class.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        y_true, y_scores, class_names = classifier.predict_proba(X_test), classifier.classes_, ['Class 0', 'Class 1']
+        classifier.log_roc_curve(y_true, y_scores, class_names)
+        ```
+
         """
         if len(np.unique(y_true)) > 2:
             self._log_multi_class_roc_curve(y_true, y_scores, class_names)
