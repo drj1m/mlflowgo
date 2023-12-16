@@ -448,15 +448,30 @@ class ArtifactLogger:
 
     def log_precision_recall_curve(selk, y_true, y_scores, class_names):
         """
-        Logs a precision-recall curve plot as an MLflow artifact.
+        Logs a Precision-Recall curve plot as an MLflow artifact.
+
+        This function generates and logs a Precision-Recall curve for a classifier as an MLflow artifact. It computes
+        Precision-Recall curves and area under the curve (AUC) for each class and plots them.
 
         Parameters:
         y_true (array-like): True labels of the data.
-
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
-
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, or binary decisions.
         class_names (list): List of class names corresponding to the labels.
+
+        Example:
+        ```python
+        classifier = BinaryClassifier()
+        y_true, y_scores = classifier.predict_proba(X_test), y_test
+        class_names = ['Class A', 'Class B']
+        classifier.log_precision_recall_curve(y_true, y_scores, class_names)
+        ```
+
+        Notes:
+        - This function is suitable for both binary and multi-class classification problems.
+        - It generates and logs Precision-Recall curves and area under the curve (AUC) values for each class.
+        - The class names provided in `class_names` are used for labeling the individual class Precision-Recall curves.
+        - The function logs the Precision-Recall curve plot as an MLflow artifact.
+
         """
         # Compute Precision-Recall and plot curve
         precision = dict()
