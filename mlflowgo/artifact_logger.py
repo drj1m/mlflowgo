@@ -1079,10 +1079,50 @@ class ArtifactLogger:
         """
         Generates and logs a model summary as an MLflow artifact for regression models.
 
+        This function computes and logs various regression metrics, including Mean Squared Error (MSE), Mean Absolute Error (MAE),
+        and R-squared (R2) for both the training and test datasets. The summary is saved as a text file and logged as an MLflow
+        artifact with the label 'Metrics'.
+
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        X_train, y_train (pd.DataFrame): Training dataset (features and target).
-        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+
+        X_train, y_train (pd.DataFrame): Training dataset, consisting of features (X_train) and target values (y_train).
+
+        X_test, y_test (pd.DataFrame): Test dataset, consisting of features (X_test) and target values (y_test).
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        from sklearn.model_selection import train_test_split
+        import pandas as pd
+
+        # Create a pipeline with a linear regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate example data
+        X = pd.DataFrame({'Feature1': [1, 2, 3, 4, 5], 'Feature2': [2, 4, 5, 4, 5]})
+        y = pd.Series([3, 5, 6, 7, 8])
+
+        # Split the data into training and test sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Log the regression report
+        your_artifact_base.log_regression_report(model, X_train, y_train, X_test, y_test)
+        ```
+
+        Notes:
+        - This function computes regression metrics such as MSE, MAE, and R2 for both the training and test datasets.
+        - The summary is saved as a temporary text file and logged as an MLflow artifact with the label 'Metrics'.
+        - The temporary file is removed after logging.
+
+        Raises:
+        - None
+
+        Returns:
+        - None
         """
         # Predictions on training and test sets
         y_train_pred = np.nan_to_num(pipeline.predict(X_train))
