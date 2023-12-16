@@ -1,6 +1,28 @@
-Example run:
 
-typical approach to loading in data and defining an sklearn pipeline
+**mlflowgo** is a Python package that simplifies and enhances the integration of MLflow with your machine learning workflows. It provides a set of utilities and helper functions to streamline the process of tracking experiments, logging artifacts, and managing machine learning models using MLflow. 
+
+Spend your time on evaluating, refining and productionising your models rather than recycling out the same code - grab a tea/coffee and let mlflowgo do the rest.
+
+## Features
+
+- Easily create and manage MLflow experiments.
+- Log various types of artifacts, such as plots, reports, and data samples.
+- Streamline the tracking of model parameters and metrics.
+- Simplify the deployment of machine learning models to MLflow servers.
+- Supports a wide range of machine learning frameworks and libraries.
+
+## Installation
+
+You can install **mlflowgo** using pip:
+
+```bash
+pip install mlflowgo
+```
+
+## Example run 1:
+
+Simple example using the sklearn dataset, in this case we assume some prior knowledge of which model will work best for this dataset.
+
 ``` python
 from mlflowgo.mlflowgo import MLFlowGo
 from sklearn.pipeline import Pipeline
@@ -30,9 +52,9 @@ mlflow_go.run_experiment(pipeline=model,
                          y=data['target'])
 ```
 
-**Not sure which model to run?** - No problem
+## Example run 2
 
-`mlflowgo` can quickly identify and "battle" the top contenders to find the best solution, just drop the `pipeline` argument:
+Using the same Iris toy dataset we can run an experiment with mlflowgo without defining any pipelines up front.
 
 ``` python
 iris = datasets.load_iris()
