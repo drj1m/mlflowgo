@@ -552,10 +552,31 @@ class ArtifactLogger:
         """
         Generates and logs a SHAP summary plot to MLflow.
 
+        This function generates SHAP (SHapley Additive exPlanations) summary plots for interpreting machine learning model
+        predictions and logs them as MLflow artifacts.
+
         Parameters:
-        pipeline: Reference to the sklearn pipeline object.
-        model_step (string): Step name for the model in the pipeline.
+        pipeline: Reference to the scikit-learn pipeline object.
+
+        model_step (string): The step name for the model in the pipeline.
+
         X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+
+        Example:
+        ```python
+        classifier = BinaryClassifierPipeline()
+        classifier.fit(X_train, y_train)
+        classifier.log_shap_summary_plot(classifier.pipeline, 'model_step_name', X_test)
+        ```
+
+        Notes:
+        - This function requires the SHAP library to be installed. SHAP is a powerful tool for interpreting the output of
+        machine learning models.
+        - It generates SHAP summary plots to help users understand the impact of individual features on model predictions.
+        - The `model_step` parameter specifies the name of the model step in the pipeline.
+        - The `X` parameter should be a DataFrame containing the input features used for prediction and SHAP value
+        calculation.
+        - The function logs the SHAP summary plots as MLflow artifacts.
         """
         explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
 
