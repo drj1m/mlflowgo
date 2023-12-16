@@ -1221,11 +1221,53 @@ class ArtifactLogger:
 
     def log_scale_location_plot(self, pipeline, X_test, y_test):
         """
-        Generates and logs a scale-location plot as an MLflow artifact to check homoscedasticity.
+        Generates and logs a Scale-Location plot as an MLflow artifact to assess homoscedasticity in regression.
+
+        A Scale-Location plot is a graphical tool used to check whether the variance of the residuals is constant 
+        (homoscedastic) across the range of predicted values. In regression analysis, constant variance of residuals 
+        is one of the assumptions for linear regression.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+
+        X_test, y_test (pd.DataFrame): Test dataset, consisting of features (X_test) and target values (y_test).
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        from sklearn.model_selection import train_test_split
+        import pandas as pd
+
+        # Create a pipeline with a linear regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate example data
+        X = pd.DataFrame({'Feature1': [1, 2, 3, 4, 5], 'Feature2': [2, 4, 5, 4, 5]})
+        y = pd.Series([3, 5, 6, 7, 8])
+
+        # Split the data into training and test sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Fit the model and log the Scale-Location plot
+        model.fit(X_train, y_train)
+        your_artifact_base.log_scale_location_plot(model, X_test, y_test)
+        ```
+
+        Notes:
+        - The Scale-Location plot is generated to assess homoscedasticity in regression analysis.
+        - Residuals are calculated as the differences between observed (y_test) and predicted values.
+        - The plot visualizes the relationship between the predicted values and the square root of the absolute residuals.
+        - The Scale-Location plot is saved as a temporary image file and logged as an MLflow artifact with the label 'Metrics'.
+        - The temporary file is removed after logging.
+
+        Raises:
+        - None
+
+        Returns:
+        - None
         """
         y_pred = pipeline.predict(X_test)
         residuals = y_test - y_pred
