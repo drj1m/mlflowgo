@@ -798,10 +798,27 @@ class ArtifactLogger:
         """
         Logs a data sample as an MLflow artifact.
 
+        This function allows you to log a sample of your feature dataset as an MLflow artifact, making it easy to
+        inspect and share a representative subset of your data.
+
         Parameters:
-        data (array-like): The feature dataset.
+        data (array-like or pd.DataFrame): The feature dataset to sample from.
 
         sample_size (int): The size of the sample to store.
+
+        Example:
+        ```python
+        # Assuming you have a feature dataset X
+        sample_size = 100  # Size of the sample you want to log
+        your_classifier = YourClassifier()  # Replace with your classifier
+        your_classifier.log_data_sample(X, sample_size)
+        ```
+
+        Notes:
+        - This function converts the input data to a pandas DataFrame.
+        - It randomly samples `sample_size` rows from the input data.
+        - The sampled data is logged as an MLflow artifact with the label 'Data Sample'.
+        - This can be useful for sharing a representative portion of your data for analysis or debugging purposes.
         """
         sample = pd.DataFrame(data).sample(n=sample_size)
         with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
