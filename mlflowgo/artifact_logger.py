@@ -361,15 +361,30 @@ class ArtifactLogger:
 
     def _log_multi_class_roc_curve(self, y_true, y_scores, class_names):
         """
-        Logs a ROC curve for a multi-class classifier as an MLflow artifact.
+        Logs a Receiver Operating Characteristic (ROC) curve for a multi-class classifier as an MLflow artifact.
+
+        This function generates and logs a ROC curve for a multi-class classifier as an MLflow artifact. It computes ROC
+        curves and area under the ROC curve (AUC) for each class, as well as micro and macro-average ROC curves and AUC values.
 
         Parameters:
         y_true (array-like): True labels of the data.
-
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
-
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, or binary decisions.
         class_names (list): List of class names corresponding to the labels.
+
+        Example:
+        ```python
+        classifier = MultiClassClassifier()
+        y_true, y_scores = classifier.predict_proba(X_test), y_test
+        class_names = ['Class A', 'Class B', 'Class C']
+        classifier._log_multi_class_roc_curve(y_true, y_scores, class_names)
+        ```
+
+        Notes:
+        - This function is intended for multi-class classification problems.
+        - The generated ROC curve includes micro and macro-average ROC curves and AUC values, as well as individual curves for each class.
+        - The class names provided in `class_names` are used for labeling the individual class ROC curves.
+        - The function logs the ROC curve as an MLflow artifact.
+
         """
 
         # Binarize the output for multi-class
