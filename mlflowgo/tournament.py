@@ -143,7 +143,7 @@ class Tournament(Base):
             cv_results = None
             self.final_scores[self.model_name] = sklm.mean_squared_error(
                 self.y_test,
-                self.pipeline.predict(self.X_test)
+                np.nan_to_num(self.pipeline.predict(self.X_test))
             )
 
         self.model_info[self.model_name] = (run_id, self.model_name)
