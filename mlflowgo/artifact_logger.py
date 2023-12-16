@@ -830,12 +830,31 @@ class ArtifactLogger:
         """
         Logs a classification report as an MLflow artifact.
 
+        This function generates a classification report for a classification task, including metrics such as precision, recall, F1-score,
+        and support for each class. It then logs the report as an MLflow artifact.
+
         Parameters:
         y_true (array-like): True labels of the data.
 
         y_pred (array-like): Predicted labels of the data.
 
-        class_names (list): List of class names corresponding to the labels.
+        class_names (list of str): List of class names corresponding to the labels. The order should match the labels' unique values.
+
+        Example:
+        ```python
+        from sklearn.metrics import classification_report
+        class_names = ["class_0", "class_1", "class_2"]
+        y_true = [...]  # True labels
+        y_pred = [...]  # Predicted labels
+        your_classifier = YourClassifier()  # Replace with your classifier
+        your_classifier.log_classification_report(y_true, y_pred, class_names)
+        ```
+
+        Notes:
+        - The `class_names` parameter should be a list of strings corresponding to the unique labels in `y_true` and `y_pred`.
+        - The generated classification report includes precision, recall, F1-score, and support for each class.
+        - The report is logged as an MLflow artifact with the label 'Metrics'.
+        - This can be useful for tracking and comparing classification model performance.
         """
         if not isinstance(class_names[0], str):
             class_names = [str(i) for i in class_names]
