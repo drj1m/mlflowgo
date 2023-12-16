@@ -876,10 +876,42 @@ class ArtifactLogger:
         """
         Generates and logs a residual plot as an MLflow artifact.
 
+        A residual plot is used to visualize the residuals (the differences between the observed values and predicted values)
+        from a regression model. This can help in diagnosing issues like heteroscedasticity or nonlinearity in the data.
+
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+            The pipeline should contain a regression model.
+
         X (pd.DataFrame): Feature dataset.
+
         y (pd.DataFrame): Target values.
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        import pandas as pd
+        import numpy as np
+
+        # Create a pipeline with a regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate sample data
+        X = pd.DataFrame(np.random.rand(100, 1))
+        y = pd.DataFrame(2 * X.values + np.random.randn(100, 1))
+
+        # Log the residual plot
+        your_artifact_base.log_residual_plot(model, X, y)
+        ```
+
+        Notes:
+        - The provided `pipeline` should contain a regression model capable of making predictions.
+        - The residuals (differences between true and predicted values) are calculated and plotted against the predicted values.
+        - The plot is saved as a temporary file and logged as an MLflow artifact with the label 'Metrics'.
+        - Residual plots can be useful for assessing the model's performance and identifying potential issues.
         """
         # Predict the values using the model
         y_pred = pipeline.predict(X)
