@@ -243,14 +243,27 @@ class ArtifactLogger:
 
     def _log_binary_calibration_plot(self, pipeline, X, y, n_bins=10, strategy='uniform'):
         """
-        Generates and logs a calibration plot as an MLflow artifact.
+        Generate and log a binary calibration plot as an MLflow artifact.
+
+        This function generates and logs a binary calibration plot as an MLflow artifact based on binary classification results.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
-        y (pd.DataFrame): Target values.
-        n_bins(int default=10): The number of bins to use for calibration.
-        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        y (pd.DataFrame): Target values (binary classification).
+        n_bins (int, optional): The number of bins to use for calibration. Default is 10.
+        strategy (str, optional): The strategy used to define the widths of the bins. Options are 'uniform' (default) or 'quantile'.
+
+        Notes:
+        - For binary classification, this function generates a calibration plot.
+        - The calibration plot shows the relationship between predicted probabilities and the true frequency of positive outcomes.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier._log_binary_calibration_plot(pipeline, X_test, y_test, n_bins=20, strategy='uniform')
+        ```
+
         """
         # Predict probabilities
         y_proba = pipeline.predict_proba(X)[:, 1]
