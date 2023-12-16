@@ -324,13 +324,26 @@ class ArtifactLogger:
 
     def _log_binary_roc_curve(self, y_true, y_scores):
         """
-        Logs a ROC curve for a binary classifier as an MLflow artifact.
+        Logs a Receiver Operating Characteristic (ROC) curve for a binary classifier as an MLflow artifact.
+
+        This function generates and logs a ROC curve for a binary classifier as an MLflow artifact. It calculates the
+        false positive rate (FPR) and true positive rate (TPR), and computes the area under the ROC curve (AUC).
 
         Parameters:
         y_true (array-like): True labels of the data.
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, or binary decisions.
 
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        y_true, y_scores = classifier.predict_proba(X_test), y_test
+        classifier._log_binary_roc_curve(y_true, y_scores)
+        ```
+
+        Notes:
+        - This function is intended for binary classification problems.
+        - The generated ROC curve includes the AUC value for the binary classifier.
+
         """
         fpr, tpr, _ = roc_curve(y_true, y_scores[:, 1])
         roc_auc = auc(fpr, tpr)
