@@ -656,12 +656,35 @@ class ArtifactLogger:
 
     def log_regression_shap_scatter_plot(self, pipeline, model_step, X):
         """
-        Generates and logs scatter plots for each feature in MLflow
+        Generates and logs scatter plots for each feature to MLflow.
+
+        This function generates and logs scatter plots using SHAP (SHapley Additive exPlanations) for
+        interpreting machine learning model predictions. Scatter plots show the relationship between individual
+        feature values and their corresponding SHAP values, helping to understand the impact of each feature on model
+        predictions.
 
         Parameters:
-        pipeline: Reference to the sklearn pipeline object.
-        model_step (string): Step name for the model in the pipeline.
+        pipeline: Reference to the scikit-learn pipeline object.
+
+        model_step (string): The step name for the model in the pipeline.
+
         X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
+
+        Example:
+        ```python
+        regressor = RegressionPipeline()
+        regressor.fit(X_train, y_train)
+        regressor.log_regression_shap_scatter_plot(regressor.pipeline, 'model_step_name', X_test)
+        ```
+
+        Notes:
+        - This function requires the SHAP library to be installed. SHAP is a powerful tool for interpreting the output of
+        machine learning models.
+        - It generates scatter plots for each feature, showing the relationship between feature values and SHAP values.
+        - The `model_step` parameter specifies the name of the model step in the pipeline.
+        - The `X` parameter should be a DataFrame containing the input features used for prediction and SHAP value
+        calculation.
+        - The function logs the generated scatter plots as MLflow artifacts.
         """
 
         explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
