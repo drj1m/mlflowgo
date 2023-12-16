@@ -509,12 +509,30 @@ class ArtifactLogger:
         """
         Logs basic feature importance as an MLflow artifact.
 
+        This function computes and logs basic feature importance for a machine learning model in a pipeline as an MLflow
+        artifact. It can be used to visualize the relative importance of features used by the model.
+
         Parameters:
-        pipeline (sklearn.Pipeline): pipeline object.
+        pipeline (sklearn.Pipeline): A scikit-learn pipeline object containing the model.
 
-        model_step (string): Step name for the model in the pipeline.
+        model_step (string): The step name for the model in the pipeline.
 
-        feature_names (list): List of feature names.
+        feature_names (list): List of feature names corresponding to the columns in the dataset.
+
+        Example:
+        ```python
+        classifier = BinaryClassifierPipeline()
+        classifier.fit(X_train, y_train)
+        classifier.log_feature_importance(classifier.pipeline, 'model_step_name', feature_names=X_train.columns.tolist())
+        ```
+
+        Notes:
+        - This function is intended for use with tree-based models like Decision Trees, Random Forests, or Gradient Boosting,
+        which have built-in feature importance scores.
+        - It computes and logs basic feature importance scores for the specified model step.
+        - The `feature_names` parameter should be a list of feature names corresponding to the columns in the dataset.
+        - The function logs the feature importance plot as an MLflow artifact.
+
         """
         importances = pipeline.named_steps[model_step].feature_importances_
         indices = np.argsort(importances)
