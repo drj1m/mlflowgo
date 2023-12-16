@@ -606,12 +606,34 @@ class ArtifactLogger:
 
     def log_shap_partial_dependence_plot(self, pipeline, model_step, X):
         """
-        Generates and logs partial dependency plots for each feature to MLflow
+        Generates and logs partial dependency plots for each feature to MLflow.
+
+        This function generates and logs partial dependency plots using SHAP (SHapley Additive exPlanations) for
+        interpreting machine learning model predictions. Partial dependency plots show how the predicted outcome changes
+        as a single feature varies while keeping all other features constant.
 
         Parameters:
-        pipeline: Reference to the sklearn pipeline object.
-        model_step (string): Step name for the model in the pipeline.
+        pipeline: Reference to the scikit-learn pipeline object.
+
+        model_step (string): The step name for the model in the pipeline.
+
         X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+
+        Example:
+        ```python
+        classifier = BinaryClassifierPipeline()
+        classifier.fit(X_train, y_train)
+        classifier.log_shap_partial_dependence_plot(classifier.pipeline, 'model_step_name', X_test)
+        ```
+
+        Notes:
+        - This function requires the SHAP library to be installed. SHAP is a powerful tool for interpreting the output of
+        machine learning models.
+        - It generates and logs partial dependence plots for each feature in the input data.
+        - The `model_step` parameter specifies the name of the model step in the pipeline.
+        - The `X` parameter should be a DataFrame containing the input features used for prediction and SHAP value
+        calculation.
+        - The function logs the generated partial dependence plots as MLflow artifacts.
         """
 
         _, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
