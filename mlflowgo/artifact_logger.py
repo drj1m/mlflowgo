@@ -19,9 +19,6 @@ import tempfile
 class ArtifactLogger:
     """
     A class to create and log artifacts.
-
-    Methods:
-        log_artifact(self, local_path, artifact_path=None): Logs the artifact for the run.
     """
 
     def __init__(self):
@@ -29,14 +26,28 @@ class ArtifactLogger:
 
     def log_learning_curves(self, pipeline, X, y, cv, scoring):
         """
-        Generates and logs learning curve plot as an MLflow artifact.
+        Generate and log learning curve plots as MLflow artifacts.
+
+        This function generates learning curve plots for a given scikit-learn pipeline and logs them as MLflow artifacts.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
         y (pd.DataFrame): Target values.
-        cv (int, optional): Number of cross-validation splits.
-        scoring(str): A str (see model evaluation documentation) or a scorer callable object/function.
+        cv (int): Number of cross-validation splits.
+        scoring (str or callable): A scoring metric for evaluation. Refer to scikit-learn's model evaluation documentation.
+
+        Notes:
+        - The learning curves are computed using cross-validation.
+        - Learning curves provide insights into model performance as training data size increases.
+        - The generated plots show the training score and cross-validation score with varying training dataset sizes.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier.log_learning_curves(pipeline, X_train, y_train, cv=5, scoring='f1_weighted')
+        ```
+
         """
         train_sizes, train_scores, test_scores = learning_curve(
             pipeline,
@@ -80,16 +91,29 @@ class ArtifactLogger:
 
     def log_validation_curve(self, pipeline, X, y, param_name, param_range, cv, scoring):
         """
-        Generates and logs validation curve plot as an MLflow artifact.
+        Generate and log a validation curve plot as an MLflow artifact.
+
+        This function generates a validation curve plot for a specified hyperparameter, varying its values, and logs it as an MLflow artifact.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
         y (pd.DataFrame): Target values.
-        param_name(str): Name of the parameter to vary.
-        param_range (array-like): The values of the parameter that will be evaluated.
-        cv (int, optional): Number of cross-validation splits.
-        scoring(str): A str (see model evaluation documentation) or a scorer callable object/function.
+        param_name (str): Name of the hyperparameter to vary.
+        param_range (array-like): The values of the hyperparameter that will be evaluated.
+        cv (int): Number of cross-validation splits.
+        scoring (str or callable): A scoring metric for evaluation. Refer to scikit-learn's model evaluation documentation.
+
+        Notes:
+        - The validation curve is computed by varying a hyperparameter of the model and evaluating its impact on model performance.
+        - The generated plot shows the training score and cross-validation score for different values of the specified hyperparameter.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier.log_validation_curve(pipeline, X_train, y_train, param_name='max_depth', param_range=[3, 5, 7, 10], cv=5, scoring='f1_weighted')
+        ```
+
         """
         train_scores, test_scores = validation_curve(
             pipeline,
@@ -135,30 +159,58 @@ class ArtifactLogger:
 
     def log_calibration_plot(self, pipeline, X, y, n_bins=10, strategy='uniform'):
         """
-        Determine which function to call to produce a calibration plot.
+        Generate and log a calibration plot for binary or multi-class classification.
+
+        This function determines whether to generate a calibration plot for binary classification or multi-class classification based on the number of unique class labels and logs it as an MLflow artifact.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
         y (pd.DataFrame): Target values.
-        n_bins(int default=10): The number of bins to use for calibration.
-        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        n_bins (int, optional): The number of bins to use for calibration. Default is 10.
+        strategy (str, optional): The strategy used to define the widths of the bins. Options are 'uniform' (default) or 'quantile'.
+
+        Notes:
+        - The calibration plot shows the relationship between predicted probabilities and the true frequency of positive outcomes.
+        - For binary classification, it uses the isotonic regression method.
+        - For multi-class classification, it generates a calibration plot for each class (one-vs-rest).
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier.log_calibration_plot(pipeline, X_test, y_test, n_bins=20, strategy='uniform')
+        ```
+
         """
         if len(np.unique(y)) > 2:
-            self._log_calibration_plot_one_vs_rest(pipeline, X, y, n_bins=10, strategy='uniform')
+            self._log_calibration_plot_one_vs_rest(pipeline, X, y, n_bins=n_bins, strategy=strategy)
         else:
-            self._log_binary_calibration_plot(pipeline, X, y, n_bins=10, strategy='uniform')
+            self._log_binary_calibration_plot(pipeline, X, y, n_bins=n_bins, strategy=strategy)
 
     def _log_calibration_plot_one_vs_rest(self, pipeline, X, y, n_bins=10, strategy='uniform'):
         """
-        Generates and logs a one-vs-rest calibration plot as an MLflow artifact for multi-class data.
+        Generate and log a calibration plot for binary or multi-class classification.
+
+        This function determines whether to generate a calibration plot for binary classification or multi-class classification based on the number of unique class labels and logs it as an MLflow artifact.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
         y (pd.DataFrame): Target values.
-        n_bins(int default=10): The number of bins to use for calibration.
-        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        n_bins (int, optional): The number of bins to use for calibration. Default is 10.
+        strategy (str, optional): The strategy used to define the widths of the bins. Options are 'uniform' (default) or 'quantile'.
+
+        Notes:
+        - The calibration plot shows the relationship between predicted probabilities and the true frequency of positive outcomes.
+        - For binary classification, it uses the isotonic regression method.
+        - For multi-class classification, it generates a calibration plot for each class (one-vs-rest).
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier.log_calibration_plot(pipeline, X_test, y_test, n_bins=20, strategy='uniform')
+        ```
+
         """
         classes = np.unique(y)
         plt.figure(figsize=(8, 6))
@@ -191,14 +243,27 @@ class ArtifactLogger:
 
     def _log_binary_calibration_plot(self, pipeline, X, y, n_bins=10, strategy='uniform'):
         """
-        Generates and logs a calibration plot as an MLflow artifact.
+        Generate and log a binary calibration plot as an MLflow artifact.
+
+        This function generates and logs a binary calibration plot as an MLflow artifact based on binary classification results.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): Scikit-learn pipeline object implementing "fit" and "predict" methods.
         X (pd.DataFrame): Feature dataset.
-        y (pd.DataFrame): Target values.
-        n_bins(int default=10): The number of bins to use for calibration.
-        strategy (str {'uniform', 'quantile'}, default='uniform'): Strategy used to define the widths of the bins.
+        y (pd.DataFrame): Target values (binary classification).
+        n_bins (int, optional): The number of bins to use for calibration. Default is 10.
+        strategy (str, optional): The strategy used to define the widths of the bins. Options are 'uniform' (default) or 'quantile'.
+
+        Notes:
+        - For binary classification, this function generates a calibration plot.
+        - The calibration plot shows the relationship between predicted probabilities and the true frequency of positive outcomes.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        classifier._log_binary_calibration_plot(pipeline, X_test, y_test, n_bins=20, strategy='uniform')
+        ```
+
         """
         # Predict probabilities
         y_proba = pipeline.predict_proba(X)[:, 1]
@@ -228,15 +293,29 @@ class ArtifactLogger:
 
     def log_roc_curve(self, y_true, y_scores, class_names):
         """
-        Determine which function to call to produce a ROC curve.
+        Generate and log a ROC curve as an MLflow artifact.
+
+        This function generates and logs a ROC curve as an MLflow artifact. Depending on the number of unique classes,
+        it can generate either a binary ROC curve for binary classification or a multi-class ROC curve for
+        multi-class classification.
 
         Parameters:
         y_true (array-like): True labels of the data.
-
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
-
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values,
+                            or binary decisions.
         class_names (list): List of class names.
+
+        Notes:
+        - For binary classification, this function generates a binary ROC curve.
+        - For multi-class classification, this function generates a multi-class ROC curve with one curve per class.
+
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        y_true, y_scores, class_names = classifier.predict_proba(X_test), classifier.classes_, ['Class 0', 'Class 1']
+        classifier.log_roc_curve(y_true, y_scores, class_names)
+        ```
+
         """
         if len(np.unique(y_true)) > 2:
             self._log_multi_class_roc_curve(y_true, y_scores, class_names)
@@ -245,13 +324,26 @@ class ArtifactLogger:
 
     def _log_binary_roc_curve(self, y_true, y_scores):
         """
-        Logs a ROC curve for a binary classifier as an MLflow artifact.
+        Logs a Receiver Operating Characteristic (ROC) curve for a binary classifier as an MLflow artifact.
+
+        This function generates and logs a ROC curve for a binary classifier as an MLflow artifact. It calculates the
+        false positive rate (FPR) and true positive rate (TPR), and computes the area under the ROC curve (AUC).
 
         Parameters:
         y_true (array-like): True labels of the data.
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, or binary decisions.
 
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
+        Example:
+        ```python
+        classifier = Classifier(base=tournament)
+        y_true, y_scores = classifier.predict_proba(X_test), y_test
+        classifier._log_binary_roc_curve(y_true, y_scores)
+        ```
+
+        Notes:
+        - This function is intended for binary classification problems.
+        - The generated ROC curve includes the AUC value for the binary classifier.
+
         """
         fpr, tpr, _ = roc_curve(y_true, y_scores[:, 1])
         roc_auc = auc(fpr, tpr)
@@ -269,15 +361,30 @@ class ArtifactLogger:
 
     def _log_multi_class_roc_curve(self, y_true, y_scores, class_names):
         """
-        Logs a ROC curve for a multi-class classifier as an MLflow artifact.
+        Logs a Receiver Operating Characteristic (ROC) curve for a multi-class classifier as an MLflow artifact.
+
+        This function generates and logs a ROC curve for a multi-class classifier as an MLflow artifact. It computes ROC
+        curves and area under the ROC curve (AUC) for each class, as well as micro and macro-average ROC curves and AUC values.
 
         Parameters:
         y_true (array-like): True labels of the data.
-
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
-
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, or binary decisions.
         class_names (list): List of class names corresponding to the labels.
+
+        Example:
+        ```python
+        classifier = MultiClassClassifier()
+        y_true, y_scores = classifier.predict_proba(X_test), y_test
+        class_names = ['Class A', 'Class B', 'Class C']
+        classifier._log_multi_class_roc_curve(y_true, y_scores, class_names)
+        ```
+
+        Notes:
+        - This function is intended for multi-class classification problems.
+        - The generated ROC curve includes micro and macro-average ROC curves and AUC values, as well as individual curves for each class.
+        - The class names provided in `class_names` are used for labeling the individual class ROC curves.
+        - The function logs the ROC curve as an MLflow artifact.
+
         """
 
         # Binarize the output for multi-class
@@ -341,15 +448,30 @@ class ArtifactLogger:
 
     def log_precision_recall_curve(selk, y_true, y_scores, class_names):
         """
-        Logs a precision-recall curve plot as an MLflow artifact.
+        Logs a Precision-Recall curve plot as an MLflow artifact.
+
+        This function generates and logs a Precision-Recall curve for a classifier as an MLflow artifact. It computes
+        Precision-Recall curves and area under the curve (AUC) for each class and plots them.
 
         Parameters:
         y_true (array-like): True labels of the data.
-
-        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, 
-                or binary decisions.
-
+        y_scores (array-like): Target scores. Can either be probability estimates, confidence values, or binary decisions.
         class_names (list): List of class names corresponding to the labels.
+
+        Example:
+        ```python
+        classifier = BinaryClassifier()
+        y_true, y_scores = classifier.predict_proba(X_test), y_test
+        class_names = ['Class A', 'Class B']
+        classifier.log_precision_recall_curve(y_true, y_scores, class_names)
+        ```
+
+        Notes:
+        - This function is suitable for both binary and multi-class classification problems.
+        - It generates and logs Precision-Recall curves and area under the curve (AUC) values for each class.
+        - The class names provided in `class_names` are used for labeling the individual class Precision-Recall curves.
+        - The function logs the Precision-Recall curve plot as an MLflow artifact.
+
         """
         # Compute Precision-Recall and plot curve
         precision = dict()
@@ -387,12 +509,30 @@ class ArtifactLogger:
         """
         Logs basic feature importance as an MLflow artifact.
 
+        This function computes and logs basic feature importance for a machine learning model in a pipeline as an MLflow
+        artifact. It can be used to visualize the relative importance of features used by the model.
+
         Parameters:
-        pipeline (sklearn.Pipeline): pipeline object.
+        pipeline (sklearn.Pipeline): A scikit-learn pipeline object containing the model.
 
-        model_step (string): Step name for the model in the pipeline.
+        model_step (string): The step name for the model in the pipeline.
 
-        feature_names (list): List of feature names.
+        feature_names (list): List of feature names corresponding to the columns in the dataset.
+
+        Example:
+        ```python
+        classifier = BinaryClassifierPipeline()
+        classifier.fit(X_train, y_train)
+        classifier.log_feature_importance(classifier.pipeline, 'model_step_name', feature_names=X_train.columns.tolist())
+        ```
+
+        Notes:
+        - This function is intended for use with tree-based models like Decision Trees, Random Forests, or Gradient Boosting,
+        which have built-in feature importance scores.
+        - It computes and logs basic feature importance scores for the specified model step.
+        - The `feature_names` parameter should be a list of feature names corresponding to the columns in the dataset.
+        - The function logs the feature importance plot as an MLflow artifact.
+
         """
         importances = pipeline.named_steps[model_step].feature_importances_
         indices = np.argsort(importances)
@@ -412,10 +552,31 @@ class ArtifactLogger:
         """
         Generates and logs a SHAP summary plot to MLflow.
 
+        This function generates SHAP (SHapley Additive exPlanations) summary plots for interpreting machine learning model
+        predictions and logs them as MLflow artifacts.
+
         Parameters:
-        pipeline: Reference to the sklearn pipeline object.
-        model_step (string): Step name for the model in the pipeline.
+        pipeline: Reference to the scikit-learn pipeline object.
+
+        model_step (string): The step name for the model in the pipeline.
+
         X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+
+        Example:
+        ```python
+        classifier = BinaryClassifierPipeline()
+        classifier.fit(X_train, y_train)
+        classifier.log_shap_summary_plot(classifier.pipeline, 'model_step_name', X_test)
+        ```
+
+        Notes:
+        - This function requires the SHAP library to be installed. SHAP is a powerful tool for interpreting the output of
+        machine learning models.
+        - It generates SHAP summary plots to help users understand the impact of individual features on model predictions.
+        - The `model_step` parameter specifies the name of the model step in the pipeline.
+        - The `X` parameter should be a DataFrame containing the input features used for prediction and SHAP value
+        calculation.
+        - The function logs the SHAP summary plots as MLflow artifacts.
         """
         explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
 
@@ -445,12 +606,34 @@ class ArtifactLogger:
 
     def log_shap_partial_dependence_plot(self, pipeline, model_step, X):
         """
-        Generates and logs partial dependency plots for each feature to MLflow
+        Generates and logs partial dependency plots for each feature to MLflow.
+
+        This function generates and logs partial dependency plots using SHAP (SHapley Additive exPlanations) for
+        interpreting machine learning model predictions. Partial dependency plots show how the predicted outcome changes
+        as a single feature varies while keeping all other features constant.
 
         Parameters:
-        pipeline: Reference to the sklearn pipeline object.
-        model_step (string): Step name for the model in the pipeline.
+        pipeline: Reference to the scikit-learn pipeline object.
+
+        model_step (string): The step name for the model in the pipeline.
+
         X (pd.DataFrame): The input features used for prediction and SHAP value calculation.
+
+        Example:
+        ```python
+        classifier = BinaryClassifierPipeline()
+        classifier.fit(X_train, y_train)
+        classifier.log_shap_partial_dependence_plot(classifier.pipeline, 'model_step_name', X_test)
+        ```
+
+        Notes:
+        - This function requires the SHAP library to be installed. SHAP is a powerful tool for interpreting the output of
+        machine learning models.
+        - It generates and logs partial dependence plots for each feature in the input data.
+        - The `model_step` parameter specifies the name of the model step in the pipeline.
+        - The `X` parameter should be a DataFrame containing the input features used for prediction and SHAP value
+        calculation.
+        - The function logs the generated partial dependence plots as MLflow artifacts.
         """
 
         _, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
@@ -473,12 +656,35 @@ class ArtifactLogger:
 
     def log_regression_shap_scatter_plot(self, pipeline, model_step, X):
         """
-        Generates and logs scatter plots for each feature in MLflow
+        Generates and logs scatter plots for each feature to MLflow.
+
+        This function generates and logs scatter plots using SHAP (SHapley Additive exPlanations) for
+        interpreting machine learning model predictions. Scatter plots show the relationship between individual
+        feature values and their corresponding SHAP values, helping to understand the impact of each feature on model
+        predictions.
 
         Parameters:
-        pipeline: Reference to the sklearn pipeline object.
-        model_step (string): Step name for the model in the pipeline.
+        pipeline: Reference to the scikit-learn pipeline object.
+
+        model_step (string): The step name for the model in the pipeline.
+
         X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
+
+        Example:
+        ```python
+        regressor = RegressionPipeline()
+        regressor.fit(X_train, y_train)
+        regressor.log_regression_shap_scatter_plot(regressor.pipeline, 'model_step_name', X_test)
+        ```
+
+        Notes:
+        - This function requires the SHAP library to be installed. SHAP is a powerful tool for interpreting the output of
+        machine learning models.
+        - It generates scatter plots for each feature, showing the relationship between feature values and SHAP values.
+        - The `model_step` parameter specifies the name of the model step in the pipeline.
+        - The `X` parameter should be a DataFrame containing the input features used for prediction and SHAP value
+        calculation.
+        - The function logs the generated scatter plots as MLflow artifacts.
         """
 
         explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
@@ -496,12 +702,37 @@ class ArtifactLogger:
 
     def log_classification_shap_scatter_plot(self, pipeline, model_step, X):
         """
-        Generates and logs scatter plots for each feature in MLflow
+        Generates and logs scatter plots for each feature to MLflow.
+
+        This function generates and logs scatter plots using SHAP (SHapley Additive exPlanations) for
+        interpreting machine learning model predictions in a classification context. Scatter plots show the relationship
+        between individual feature values and their corresponding SHAP values for each class, helping to understand the
+        impact of each feature on class predictions.
 
         Parameters:
-        pipeline: Reference to the sklearn pipeline object.
-        model_step (string): Step name for the model in the pipeline.
+        pipeline: Reference to the scikit-learn pipeline object.
+
+        model_step (string): The step name for the model in the pipeline.
+
         X (pd.DataFrame): The input features used for predictions and SHAP value calculation.
+
+        Example:
+        ```python
+        classifier = ClassificationPipeline()
+        classifier.fit(X_train, y_train)
+        classifier.log_classification_shap_scatter_plot(classifier.pipeline, 'model_step_name', X_test)
+        ```
+
+        Notes:
+        - This function requires the SHAP library to be installed. SHAP is a powerful tool for interpreting the output of
+        machine learning models.
+        - It generates scatter plots for each feature and each class, showing the relationship between feature values and
+        SHAP values for class predictions.
+        - The `model_step` parameter specifies the name of the model step in the pipeline.
+        - The `X` parameter should be a DataFrame containing the input features used for prediction and SHAP value
+        calculation.
+        - The function logs the generated scatter plots as MLflow artifacts, with separate plots for each class if
+        applicable.
         """
         model = pipeline.named_steps[model_step]
         explainer, X = ArtifactBase.get_shap_explainer(pipeline, model_step, X)
@@ -525,12 +756,31 @@ class ArtifactLogger:
 
     def log_confusion_matrix(self, y_true, y_pred):
         """
-        Logs confusion matrix as an MLflow artifact.
+        Logs a confusion matrix plot as an MLflow artifact.
+
+        This function generates and logs a confusion matrix plot, which is a valuable tool for evaluating the performance
+        of classification models. The confusion matrix visualizes the number of true positive, true negative, false
+        positive, and false negative predictions made by a classifier.
 
         Parameters:
         y_true (array-like): The true values for y.
 
-        y_pred (array-like): The prediction values for y.
+        y_pred (array-like): The predicted values for y.
+
+        Example:
+        ```python
+        classifier = ClassificationPipeline()
+        classifier.fit(X_train, y_train)
+        y_pred = classifier.predict(X_test)
+        classifier.log_confusion_matrix(y_test, y_pred)
+        ```
+
+        Notes:
+        - This function requires scikit-learn and matplotlib to be installed.
+        - It generates a confusion matrix plot based on the true and predicted values.
+        - The `y_true` parameter should contain the true target labels.
+        - The `y_pred` parameter should contain the predicted target labels.
+        - The function logs the confusion matrix plot as an MLflow artifact for visualization.
         """
         cm = confusion_matrix(y_true, y_pred)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
@@ -548,10 +798,27 @@ class ArtifactLogger:
         """
         Logs a data sample as an MLflow artifact.
 
+        This function allows you to log a sample of your feature dataset as an MLflow artifact, making it easy to
+        inspect and share a representative subset of your data.
+
         Parameters:
-        data (array-like): The feature dataset.
+        data (array-like or pd.DataFrame): The feature dataset to sample from.
 
         sample_size (int): The size of the sample to store.
+
+        Example:
+        ```python
+        # Assuming you have a feature dataset X
+        sample_size = 100  # Size of the sample you want to log
+        your_classifier = YourClassifier()  # Replace with your classifier
+        your_classifier.log_data_sample(X, sample_size)
+        ```
+
+        Notes:
+        - This function converts the input data to a pandas DataFrame.
+        - It randomly samples `sample_size` rows from the input data.
+        - The sampled data is logged as an MLflow artifact with the label 'Data Sample'.
+        - This can be useful for sharing a representative portion of your data for analysis or debugging purposes.
         """
         sample = pd.DataFrame(data).sample(n=sample_size)
         with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
@@ -563,12 +830,31 @@ class ArtifactLogger:
         """
         Logs a classification report as an MLflow artifact.
 
+        This function generates a classification report for a classification task, including metrics such as precision, recall, F1-score,
+        and support for each class. It then logs the report as an MLflow artifact.
+
         Parameters:
         y_true (array-like): True labels of the data.
 
         y_pred (array-like): Predicted labels of the data.
 
-        class_names (list): List of class names corresponding to the labels.
+        class_names (list of str): List of class names corresponding to the labels. The order should match the labels' unique values.
+
+        Example:
+        ```python
+        from sklearn.metrics import classification_report
+        class_names = ["class_0", "class_1", "class_2"]
+        y_true = [...]  # True labels
+        y_pred = [...]  # Predicted labels
+        your_classifier = YourClassifier()  # Replace with your classifier
+        your_classifier.log_classification_report(y_true, y_pred, class_names)
+        ```
+
+        Notes:
+        - The `class_names` parameter should be a list of strings corresponding to the unique labels in `y_true` and `y_pred`.
+        - The generated classification report includes precision, recall, F1-score, and support for each class.
+        - The report is logged as an MLflow artifact with the label 'Metrics'.
+        - This can be useful for tracking and comparing classification model performance.
         """
         if not isinstance(class_names[0], str):
             class_names = [str(i) for i in class_names]
@@ -590,10 +876,42 @@ class ArtifactLogger:
         """
         Generates and logs a residual plot as an MLflow artifact.
 
+        A residual plot is used to visualize the residuals (the differences between the observed values and predicted values)
+        from a regression model. This can help in diagnosing issues like heteroscedasticity or nonlinearity in the data.
+
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+            The pipeline should contain a regression model.
+
         X (pd.DataFrame): Feature dataset.
+
         y (pd.DataFrame): Target values.
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        import pandas as pd
+        import numpy as np
+
+        # Create a pipeline with a regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate sample data
+        X = pd.DataFrame(np.random.rand(100, 1))
+        y = pd.DataFrame(2 * X.values + np.random.randn(100, 1))
+
+        # Log the residual plot
+        your_artifact_base.log_residual_plot(model, X, y)
+        ```
+
+        Notes:
+        - The provided `pipeline` should contain a regression model capable of making predictions.
+        - The residuals (differences between true and predicted values) are calculated and plotted against the predicted values.
+        - The plot is saved as a temporary file and logged as an MLflow artifact with the label 'Metrics'.
+        - Residual plots can be useful for assessing the model's performance and identifying potential issues.
         """
         # Predict the values using the model
         y_pred = pipeline.predict(X)
@@ -624,10 +942,43 @@ class ArtifactLogger:
         """
         Generates and logs a prediction vs. actual plot as an MLflow artifact.
 
+        This function creates a scatter plot that compares the predicted values generated by a machine learning model
+        to the actual target values. It helps in visualizing how well the model's predictions align with the true values.
+
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): object type that implements the "fit" and "predict" methods
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+            The pipeline should contain a model capable of making predictions.
+
         X (pd.DataFrame): Feature dataset.
+
         y (pd.DataFrame): Target values.
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        import pandas as pd
+        import numpy as np
+
+        # Create a pipeline with a regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate sample data
+        X = pd.DataFrame(np.random.rand(100, 1))
+        y = pd.DataFrame(2 * X.values + np.random.randn(100, 1))
+
+        # Log the prediction vs. actual plot
+        your_artifact_base.log_prediction_vs_actual_plot(model, X, y)
+        ```
+
+        Notes:
+        - The provided `pipeline` should contain a model capable of making predictions.
+        - The scatter plot shows how well the model's predictions align with the actual target values.
+        - The diagonal line represents perfect predictions, and points closer to the line indicate better model performance.
+        - The plot is saved as a temporary file and logged as an MLflow artifact with the label 'Metrics'.
+        - This visualization can help assess the model's accuracy and identify any systematic errors.
         """
         # Predict the values using the model
         y_pred = pipeline.predict(X)
@@ -656,10 +1007,46 @@ class ArtifactLogger:
         Generates and logs a coefficient plot as an MLflow artifact for linear regression models
         or others with a 'coef_' attribute.
 
+        This function creates a bar plot to visualize the coefficients of features in a linear regression model
+        or other models with a 'coef_' attribute. It helps in understanding the impact and importance of each feature
+        on the model's predictions.
+
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        model_step (str): Step name for the model
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+            The pipeline should contain a model with a 'coef_' attribute (e.g., Linear Regression).
+
+        model_step (str): Step name for the model in the pipeline.
+
         feature_names (list): A list of names for the features corresponding to the coefficients.
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        import pandas as pd
+
+        # Create a pipeline with a linear regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Define feature names
+        feature_names = ['Feature1', 'Feature2', 'Feature3']
+
+        # Log the coefficient plot
+        your_artifact_base.log_coefficient_plot(model, 'regressor', feature_names)
+        ```
+
+        Notes:
+        - The provided `pipeline` should contain a model with a 'coef_' attribute (e.g., Linear Regression).
+        - The bar plot shows the coefficients of each feature, indicating their impact on the model's predictions.
+        - Feature names should be provided to label the x-axis of the plot.
+        - The plot is saved as a temporary file and logged as an MLflow artifact with the label 'Metrics'.
+        - This visualization can help interpret the importance of each feature in the model.
+
+        Raises:
+        - ValueError: If the provided estimator does not have a 'coef_' attribute.
+        - ValueError: If the number of feature names does not match the number of coefficients.
         """
         # Ensure the model has the attribute 'coef_'
         if not hasattr(pipeline.named_steps[model_step], 'coef_'):
@@ -692,10 +1079,50 @@ class ArtifactLogger:
         """
         Generates and logs a model summary as an MLflow artifact for regression models.
 
+        This function computes and logs various regression metrics, including Mean Squared Error (MSE), Mean Absolute Error (MAE),
+        and R-squared (R2) for both the training and test datasets. The summary is saved as a text file and logged as an MLflow
+        artifact with the label 'Metrics'.
+
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        X_train, y_train (pd.DataFrame): Training dataset (features and target).
-        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+
+        X_train, y_train (pd.DataFrame): Training dataset, consisting of features (X_train) and target values (y_train).
+
+        X_test, y_test (pd.DataFrame): Test dataset, consisting of features (X_test) and target values (y_test).
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        from sklearn.model_selection import train_test_split
+        import pandas as pd
+
+        # Create a pipeline with a linear regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate example data
+        X = pd.DataFrame({'Feature1': [1, 2, 3, 4, 5], 'Feature2': [2, 4, 5, 4, 5]})
+        y = pd.Series([3, 5, 6, 7, 8])
+
+        # Split the data into training and test sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Log the regression report
+        your_artifact_base.log_regression_report(model, X_train, y_train, X_test, y_test)
+        ```
+
+        Notes:
+        - This function computes regression metrics such as MSE, MAE, and R2 for both the training and test datasets.
+        - The summary is saved as a temporary text file and logged as an MLflow artifact with the label 'Metrics'.
+        - The temporary file is removed after logging.
+
+        Raises:
+        - None
+
+        Returns:
+        - None
         """
         # Predictions on training and test sets
         y_train_pred = np.nan_to_num(pipeline.predict(X_train))
@@ -733,11 +1160,52 @@ class ArtifactLogger:
 
     def log_qq_plot(self, pipeline, X_test, y_test):
         """
-        Generates and logs a Q-Q plot as an MLflow artifact to assess normality of residuals.
+        Generates and logs a Quantile-Quantile (Q-Q) plot as an MLflow artifact to assess the normality of residuals.
+
+        A Q-Q plot is a graphical tool used to determine whether a dataset follows a specific theoretical distribution, 
+        such as a normal distribution. In the context of regression analysis, it is often used to assess the normality of 
+        residuals (the differences between observed and predicted values).
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+
+        X_test, y_test (pd.DataFrame): Test dataset, consisting of features (X_test) and target values (y_test).
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        from sklearn.model_selection import train_test_split
+        import pandas as pd
+
+        # Create a pipeline with a linear regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate example data
+        X = pd.DataFrame({'Feature1': [1, 2, 3, 4, 5], 'Feature2': [2, 4, 5, 4, 5]})
+        y = pd.Series([3, 5, 6, 7, 8])
+
+        # Split the data into training and test sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Fit the model and log the Q-Q plot
+        model.fit(X_train, y_train)
+        your_artifact_base.log_qq_plot(model, X_test, y_test)
+        ```
+
+        Notes:
+        - The Q-Q plot is generated to assess the normality of residuals in regression analysis.
+        - Residuals are calculated as the differences between observed (y_test) and predicted values.
+        - The Q-Q plot is saved as a temporary image file and logged as an MLflow artifact with the label 'Metrics'.
+        - The temporary file is removed after logging.
+
+        Raises:
+        - None
+
+        Returns:
+        - None
         """
         residuals = y_test - pipeline.predict(X_test)
         plt.figure(figsize=(8, 6))
@@ -753,11 +1221,53 @@ class ArtifactLogger:
 
     def log_scale_location_plot(self, pipeline, X_test, y_test):
         """
-        Generates and logs a scale-location plot as an MLflow artifact to check homoscedasticity.
+        Generates and logs a Scale-Location plot as an MLflow artifact to assess homoscedasticity in regression.
+
+        A Scale-Location plot is a graphical tool used to check whether the variance of the residuals is constant 
+        (homoscedastic) across the range of predicted values. In regression analysis, constant variance of residuals 
+        is one of the assumptions for linear regression.
 
         Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        X_test, y_test (pd.DataFrame): Test dataset (features and target).
+        pipeline (sklearn.pipeline.Pipeline): An object implementing the "fit" and "predict" methods.
+
+        X_test, y_test (pd.DataFrame): Test dataset, consisting of features (X_test) and target values (y_test).
+
+        Example:
+        ```python
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LinearRegression
+        from sklearn.model_selection import train_test_split
+        import pandas as pd
+
+        # Create a pipeline with a linear regression model
+        model = Pipeline([
+            ('regressor', LinearRegression())
+        ])
+
+        # Generate example data
+        X = pd.DataFrame({'Feature1': [1, 2, 3, 4, 5], 'Feature2': [2, 4, 5, 4, 5]})
+        y = pd.Series([3, 5, 6, 7, 8])
+
+        # Split the data into training and test sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Fit the model and log the Scale-Location plot
+        model.fit(X_train, y_train)
+        your_artifact_base.log_scale_location_plot(model, X_test, y_test)
+        ```
+
+        Notes:
+        - The Scale-Location plot is generated to assess homoscedasticity in regression analysis.
+        - Residuals are calculated as the differences between observed (y_test) and predicted values.
+        - The plot visualizes the relationship between the predicted values and the square root of the absolute residuals.
+        - The Scale-Location plot is saved as a temporary image file and logged as an MLflow artifact with the label 'Metrics'.
+        - The temporary file is removed after logging.
+
+        Raises:
+        - None
+
+        Returns:
+        - None
         """
         y_pred = pipeline.predict(X_test)
         residuals = y_test - y_pred

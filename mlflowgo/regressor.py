@@ -8,17 +8,41 @@ import numpy as np
 
 
 class Regressor(ArtifactLogger):
-    """ A class to handle logging artifacts to MLFlow for regression model
     """
+    Regressor class for machine learning model evaluation and logging using MLflow.
 
+    This class extends the `ArtifactLogger` class and provides functionality for logging various regression-related
+    artifacts and metrics to MLflow, including residual plots, predicted vs. actual plots, coefficient plots, regression
+    reports, QQ plots, scale-location plots, experiment summaries, data samples, learning curves, validation curves,
+    feature importance, and SHAP (if applicable).
+
+    Attributes:
+        base (Tournament): The `Tournament` instance containing the machine learning pipeline and dataset information.
+    """
     def __init__(self, base: Tournament):
+        """
+        Initialize a Regressor instance.
+
+        Args:
+            base (Tournament): The `Tournament` instance containing the machine learning pipeline and dataset information.
+
+        Returns:
+            None
+        """
         super().__init__()
         self.base = base
 
     def log(self):
-        """ Log artifacts to MLFlow
         """
+        Log various regression-related artifacts and metrics to MLflow.
 
+        This method logs residual plots, predicted vs. actual plots, coefficient plots (if applicable), regression
+        reports, QQ plots, scale-location plots, experiment summaries, data samples, learning curves, validation curves,
+        feature importance (if applicable), and SHAP plots (if applicable) to MLflow for analysis and tracking.
+
+        Returns:
+            None
+        """
         # Log residual plot
         self.log_residual_plot(self.base.pipeline,
                                self.base.X_test,
@@ -97,18 +121,41 @@ class Regressor(ArtifactLogger):
 
     def _generate_regression_experiment_summary(self):
         """
-        Generates and updates an MLflow experiment summary based on a training pipeline.
+        Generate a dynamic experiment summary and update the MLflow experiment's description.
 
-        Parameters:
-        pipeline (sklearn.pipeline.Pipeline): Object type that implements the "fit" and "predict" methods
-        X_train, y_train (pd.DataFrame): Training dataset (features and target).
-        X_test, y_test (pd.DataFrame): Test dataset (features and target).
-        objective (str): The objective of the experiment.
-        dataset_desc (str): Description of the dataset used.
+        This method generates a dynamic experiment summary by analyzing performance metrics and hyperparameters of the
+        regression model. It constructs a description string and updates the MLflow experiment's description with the
+        summary information.
+
+        Returns:
+            None
         """
         def analyze_results(performance_metrics):
             """
-            Analyze performance metrics to generate key findings.
+            Analyze the performance metrics of a regression model and provide insights.
+
+            This function takes a dictionary of performance metrics, including 'Train RMSE' and 'Test RMSE', and analyzes
+            the model's performance on training and test data. It provides insights based on the comparison of these metrics.
+
+            Parameters:
+                performance_metrics (dict): A dictionary containing performance metrics with keys:
+                    - 'Train RMSE': Root Mean Squared Error on the training data.
+                    - 'Test RMSE': Root Mean Squared Error on the test data.
+
+            Returns:
+                str: A textual analysis of the model's performance.
+
+            The analysis logic includes the following:
+            - If the test RMSE is significantly higher (more than 20% higher) than the train RMSE, it suggests that
+            the model may be overfitting the training data.
+            - If the test RMSE is lower than the train RMSE, which is unusual, it may suggest data leakage or overfitting.
+            - If none of the above conditions apply, it indicates that the model generalizes well from training to test data.
+
+            Example:
+                >>> metrics = {'Train RMSE': 0.5, 'Test RMSE': 0.6}
+                >>> analysis = analyze_results(metrics)
+                >>> print(analysis)
+                "Model may be overfitting as test RMSE is significantly higher than train RMSE."
             """
             # Example analysis logic
             train_rmse = performance_metrics['Train RMSE']
@@ -122,7 +169,31 @@ class Regressor(ArtifactLogger):
 
         def generate_conclusions(performance_metrics):
             """
-            Generate dynamic conclusions based on performance metrics.
+            Generate conclusions based on performance metrics of a regression model.
+
+            This function takes a dictionary of performance metrics, including 'Test R2', and generates conclusions
+            about the model's performance on test data.
+
+            Parameters:
+                performance_metrics (dict): A dictionary containing performance metrics with keys:
+                    - 'Test R2': R-squared score on the test data.
+
+            Returns:
+                str: A textual conclusion about the model's performance.
+
+            The conclusion logic includes the following:
+            - If the test R-squared score is greater than 0.8, it suggests that the model exhibits high predictive accuracy
+            on the test data, and further tuning may focus on feature selection.
+            - If the test R-squared score is less than 0.5, it indicates that the model underperforms on test data, and
+            consideration should be given to revising model complexity or feature engineering.
+            - For test R-squared scores between 0.5 and 0.8, it suggests that the model shows moderate performance, and
+            there is room for further improvement through model tuning.
+
+            Example:
+                >>> metrics = {'Test R2': 0.85}
+                >>> conclusion = generate_conclusions(metrics)
+                >>> print(conclusion)
+                "Model shows high predictive accuracy on test data. Further tuning may focus on feature selection."
             """
             # Example logic for conclusion
             test_r2 = performance_metrics['Test R2']

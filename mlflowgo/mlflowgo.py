@@ -1,11 +1,10 @@
-from .artifact_base import ArtifactBase
 from .regressor import Regressor
 from .classifier import Classifier
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
 from .tournament import Tournament
 import mlflow
 import mlflow.sklearn
-from sklearn.model_selection import cross_val_score, train_test_split, RandomizedSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn import metrics as sklm
 import subprocess
@@ -14,28 +13,32 @@ import webbrowser
 import requests
 import time
 import pandas as pd
-import numpy as np
 
 
 class MLFlowGo():
     """
-    A class to integrate MLFlow with scikit-learn pipelines for data scientists.
+    MLFlowGo class for running experiments, logging, and managing MLflow experiments.
+
+    This class provides a high-level interface for running machine learning experiments, logging artifacts and metrics
+    to MLflow, and managing MLflow experiments.
+
+    Parameters:
+        experiment_name (str): The name of the MLflow experiment to use.
+        tracking_uri (str, optional): The URI of the MLflow tracking server (default is None).
 
     Attributes:
-        experiment_name (str): Name of the MLFlow experiment.
-        tracking_uri (str, optional): URI for MLFlow tracking server.
-
-    Methods:
-        run_experiment(model, X, y, cv, metrics, **kwargs): Runs an experiment with cross-validation and logs the results.
+        experiment_name (str): The name of the MLflow experiment.
     """
-
     def __init__(self, experiment_name, tracking_uri=None):
         """
-        Initialize the MLFlowGo class with experiment name and optional tracking URI.
+        Initialize an MLFlowGo instance.
 
-        Parameters:
-            experiment_name (str): Name of the MLFlow experiment.
-            tracking_uri (str, optional): URI for MLFlow tracking server. Defaults to None.
+        Args:
+            experiment_name (str): The name of the MLflow experiment to use.
+            tracking_uri (str, optional): The URI of the MLflow tracking server (default is None).
+
+        Returns:
+            None
         """
         self.experiment_name = experiment_name
         if tracking_uri:
@@ -44,17 +47,24 @@ class MLFlowGo():
 
     def run_experiment(self, X: pd.DataFrame, y: pd.DataFrame, cv: int = 5, pipeline: Pipeline = None, grid_search=False, register=False, **kwargs):
         """
-        Runs a cross-validation experiment with the given pipeline and data, logs the metrics and model in MLFlow.
+        Run a machine learning experiment, log results, and manage the MLflow experiment.
+
+        This method runs a machine learning experiment using the provided dataset and pipeline(s). It logs various
+        metrics, parameters, and artifacts to MLflow. Additionally, it can register the best-performing model in the
+        MLflow model registry.
 
         Parameters:
-            pipeline (sklearn.pipeline.Pipeline): The scikit-learn compatible pipeline to evaluate.
-            X (pd.DataFrame): Feature dataset.
-            y (pd.DataFrame): Target values.
-            cv (int, optional): Number of cross-validation splits. Defaults to 5.
-            metrics (list of str, optional): Metrics to log. Defaults to ['accuracy'].
-            **kwargs: Additional keyword arguments for cross_val_score function.
-        """
+            X (pd.DataFrame): The feature data for training and testing.
+            y (pd.DataFrame): The target data for training and testing.
+            cv (int, optional): The number of cross-validation folds (default is 5).
+            pipeline (Pipeline, optional): The machine learning pipeline to use (default is None).
+            grid_search (bool, optional): Whether to perform grid search for hyperparameter tuning (default is False).
+            register (bool, optional): Whether to register the best model in the MLflow model registry (default is False).
+            **kwargs: Additional keyword arguments.
 
+        Returns:
+            None
+        """
         X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.33)
 
@@ -73,8 +83,8 @@ class MLFlowGo():
                 tournament.run(
                     run_id=run.info.run_id,
                     pipeline=_pipeline,
-                    grid_search=False,
-                    cv=-1)
+                    grid_search=grid_search,
+                    cv=cv)
 
                 # Log parameters, metrics, and model
                 self._log_params(tournament.pipeline)
@@ -96,9 +106,17 @@ class MLFlowGo():
 
     def _log_artifacts(self, tournament):
         """
-        Log all relevant artifacts for the experiment
-        """
+        Log artifacts and metrics to MLflow using the appropriate ArtifactLogger.
 
+        This method selects the appropriate ArtifactLogger (Regressor or Classifier) based on the task type and logs
+        relevant artifacts and metrics to MLflow.
+
+        Parameters:
+            tournament (Tournament): The Tournament instance containing the experiment information.
+
+        Returns:
+            None
+        """
         if tournament.task_type == REGRESSOR_KEY:
             artifact_logger = Regressor(tournament)
         elif tournament.task_type == CLASSIFIER_KEY:
@@ -108,7 +126,15 @@ class MLFlowGo():
 
     def _log_params(self, pipeline):
         """
-        Logs the parameters of the model or pipeline.
+        Log hyperparameters to MLflow.
+
+        This method logs the hyperparameters of a machine learning pipeline to MLflow.
+
+        Parameters:
+            pipeline: The machine learning pipeline.
+
+        Returns:
+            None
         """
         if isinstance(pipeline, Pipeline):
             params = pipeline.get_params()
@@ -117,7 +143,20 @@ class MLFlowGo():
         mlflow.log_params(params)
 
     def _log_metrics(self, y_true, y_pred, metrics, task_type):
-        """Logs the metrics from cross-validation results."""
+        """
+        Log metrics to MLflow.
+
+        This method logs machine learning metrics to MLflow based on the task type (regression or classification).
+
+        Parameters:
+            y_true: True target values.
+            y_pred: Predicted target values.
+            metrics: Dictionary of metrics to log.
+            task_type: The task type (CLASSIFIER_KEY or REGRESSOR_KEY).
+
+        Returns:
+            None
+        """
         if task_type == REGRESSOR_KEY:
             metric_func = {
                 'max_error': lambda y_true, y_pred: sklm.max_error(y_true, y_pred),
@@ -148,9 +187,17 @@ class MLFlowGo():
 
     def run_mlflow_ui(self, port=5000, open_browser=True):
         """
-        Starts the MLflow UI server on a specified port and optionally opens it in a web browser.
-        """
+        Run the MLflow UI.
 
+        This method starts the MLflow UI server and optionally opens it in a web browser.
+
+        Parameters:
+            port (int, optional): The port number for the MLflow UI server (default is 5000).
+            open_browser (bool, optional): Whether to open the MLflow UI in a web browser (default is True).
+
+        Returns:
+            None
+        """
         def is_server_running():
             """ Check if the MLflow UI server is already running """
             try:

@@ -7,17 +7,12 @@ from sklearn.linear_model import (
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.gaussian_process import GaussianProcessRegressor, GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
 from sklearn.neural_network import MLPRegressor, MLPClassifier
-from sklearn.isotonic import IsotonicRegression
-from sklearn.decomposition import PCA
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
@@ -32,6 +27,20 @@ class Base():
 
     @staticmethod
     def get_pipeline(pipeline, task_type):
+        """
+        Get the scikit-learn pipeline and identify the modeling task type.
+
+        Parameters:
+            pipeline (sklearn.pipeline.Pipeline): The scikit-learn pipeline object.
+            task_type (str or None): Type of the modeling task. If None, it will be determined based on the pipeline content.
+
+        Returns:
+            tuple: A tuple containing the scikit-learn pipeline object and the identified task type ('classification' or 'regression').
+
+        Raises:
+            ValueError: If the provided object is not a scikit-learn Pipeline.
+            ValueError: If an invalid task_type is provided.
+        """
         if not isinstance(pipeline, Pipeline):
             raise ValueError("The provided object is not a scikit-learn Pipeline.")
 
@@ -45,11 +54,13 @@ class Base():
     @staticmethod
     def get_model_step_from_pipeline(pipeline):
         """
-        Identify the model step from the pipeline
+        Identify the model step from the pipeline.
+
         Parameters:
-            pipeline (sklearn.pipeline.Pipeline): The pipeline object
-        returns:
-            step_name (str): Name of the step
+            pipeline (sklearn.pipeline.Pipeline): The pipeline object.
+
+        Returns:
+            str: Name of the step that represents the model.
         """
         if not isinstance(pipeline, Pipeline):
             raise ValueError("The provided object is not a scikit-learn Pipeline.")
@@ -78,6 +89,19 @@ class Base():
 
     @staticmethod
     def get_feature_names(feature_names, columns):
+        """
+        Get feature names and validate their length.
+
+        Parameters:
+            feature_names (list or None): List of feature names.
+            columns (list): List of column names in the dataset.
+
+        Returns:
+            list: List of feature names to use.
+
+        Raises:
+            ValueError: If the length of feature names does not match the number of columns.
+        """
         if feature_names is None:
             feature_names = columns
 
@@ -88,7 +112,18 @@ class Base():
 
     @staticmethod
     def _get_default_metrics(task_type):
-        """Returns a list of default metrics based on the task type."""
+        """
+        Get a list of default evaluation metrics based on the task type.
+
+        Parameters:
+            task_type (str): Type of the modeling task, 'classification' or 'regression'.
+
+        Returns:
+            list: List of default evaluation metrics corresponding to the task type.
+
+        Raises:
+            ValueError: If an invalid task_type is provided.
+        """
         metrics = []
         for scorer_name, scorer in _SCORERS.items():
             if task_type == CLASSIFIER_KEY and scorer._sign == 1:  # Classification metrics
@@ -98,6 +133,19 @@ class Base():
         return metrics
 
     def get_model_metrics(self, metrics, task_type):
+        """
+        Get the list of model evaluation metrics based on task type.
+
+        Parameters:
+            metrics (list or None): List of specified metrics or None to use default metrics.
+            task_type (str): Type of the modeling task, 'classification' or 'regression'.
+
+        Returns:
+            list: List of model evaluation metrics.
+
+        Raises:
+            ValueError: If an invalid task_type is provided.
+        """
         if task_type not in [CLASSIFIER_KEY, REGRESSOR_KEY]:
             raise ValueError("Invalid model type, expected: 'classification' or 'regression'")
 
@@ -108,9 +156,14 @@ class Base():
 
     @staticmethod
     def get_param_dist(model_name):
-        """ Returns the param_dist based upon the model name
+        """
+        Get parameter distribution based on the model name.
+
         Parameters:
-            model_name(str): Name of the model from `model.__class__.__name__`
+            model_name (str): Name of the model from `model.__class__.__name__`.
+
+        Returns:
+            dict or None: Parameter distribution dictionary or None if not found for the model.
         """
         _param_dist = {
             'AdaBoostRegressor': {
@@ -293,9 +346,14 @@ class Base():
 
     @staticmethod
     def get_basic_pipeline(model_name):
-        """ Returns a basic pipeline setup based upon the model name
+        """
+        Get a basic pipeline setup based on the model name.
+
         Parameters:
-            model_name(str): Name of the model from `model.__class__.__name__`
+            model_name (str): Name of the model from `model.__class__.__name__`.
+
+        Returns:
+            sklearn.pipeline.Pipeline or None: Basic pipeline or None if not found for the model.
         """
         _pipeline = {
             'AdaBoostRegressor': Pipeline([
