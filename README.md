@@ -5,11 +5,10 @@ Spend your time on evaluating, refining and productionising your models rather t
 
 ## Features
 
-- Easily create and manage MLflow experiments.
+- Quickly find an appropriate ML model for your dataset.
 - Log various types of artifacts, such as plots, reports, and data samples.
 - Streamline the tracking of model parameters and metrics.
-- Simplify the deployment of machine learning models to MLflow servers.
-- Supports a wide range of machine learning frameworks and libraries.
+- Supports a range of machine learning frameworks and libraries.
 
 ## Installation
 

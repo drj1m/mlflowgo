@@ -2,7 +2,7 @@
 name = "mlflowgo"
 version = "0.1.0"
 description = ""
-authors = ["James Weaver <jceweaver@googlemail.com>"]
+authors = ["Jimmy Weaver"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
