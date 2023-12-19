@@ -9,7 +9,7 @@ from sklearn.ensemble import (
     BaggingClassifier, VotingClassifier, StackingClassifier)
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC, LinearSVC, NuSVC
@@ -225,6 +225,19 @@ def test_mlp_classifier_pipeline(iris):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('MLP', MLPClassifier())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_nearest_centroid_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing Nearest Centroid Classifier """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('nearest_centroid', NearestCentroid())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,

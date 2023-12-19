@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
-from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC, LinearSVC, NuSVC
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
@@ -378,6 +378,10 @@ class Base():
                 "alpha": uniform(0.0001, 0.05),
                 "learning_rate": ['constant', 'adaptive']
             },
+            'NearestCentroid': {
+                'metric': ['euclidean', 'manhattan'],
+                'shrink_threshold': [None] + list(uniform(0.1, 10).rvs(10))
+            },
             'NuSVC': {
                 'nu': uniform(0.01, 1),
                 'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
@@ -596,6 +600,10 @@ class Base():
             'MLPClassifier': Pipeline([
                 ('scaler', StandardScaler()),
                 ('MLP', MLPClassifier())
+            ]),
+            'NearestCentroid': Pipeline([
+                ('scaler', StandardScaler()),
+                ('nearest_centroid', NearestCentroid())
             ]),
             'NuSVC': Pipeline([
                 ('scaler', StandardScaler()),

@@ -1057,6 +1057,34 @@ def test_mlp_classifier_randomized_search(iris):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_nearest_centroid_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('NearestCentroid')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_nearest_centroid_randomized_search(iris):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('NearestCentroid')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('NearestCentroid')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=iris.drop(columns=['target']),
+                      y=iris['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_nu_svc_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('NuSVC')
