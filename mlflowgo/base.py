@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron,
-    LassoLarsIC, PoissonRegressor, GammaRegressor)
+    LassoLarsIC, PoissonRegressor, GammaRegressor, TweedieRegressor)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR, LinearSVR
@@ -344,6 +344,14 @@ class Base():
             'TheilSenRegressor': {
                 "max_subpopulation": sp_randint(10, 500)
             },
+            'TweedieRegressor': {
+                'power': uniform(0, 3),
+                'alpha': uniform(1e-3, 1),
+                'link': ['auto', 'identity', 'log'],
+                'max_iter': [100, 500, 1000, 2000],
+                'tol': uniform(1e-4, 1e-2),
+                'warm_start': [True, False]
+            },
             'XGBRegressor': {
                 "learning_rate": uniform(0.01, 0.29),
                 "max_depth": sp_randint(3, 10),
@@ -656,6 +664,10 @@ class Base():
             'TheilSenRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('theil_sen', TheilSenRegressor())
+            ]),
+            'TweedieRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('tweedie_regressor', TweedieRegressor())
             ]),
             'XGBRegressor': Pipeline([
                 ('scaler', StandardScaler()),

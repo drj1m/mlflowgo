@@ -7,7 +7,7 @@ from sklearn.linear_model import (
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
     TheilSenRegressor, RANSACRegressor, LassoLarsIC, PoissonRegressor,
-    GammaRegressor)
+    GammaRegressor, TweedieRegressor)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
@@ -424,6 +424,18 @@ def test_theil_sen_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('theil_sen', TheilSenRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_tweeedie_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing tweedie regressor """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('tweedie_regressor', TweedieRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
