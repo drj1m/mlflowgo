@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron,
-    LassoLarsIC, PoissonRegressor)
+    LassoLarsIC, PoissonRegressor, GammaRegressor)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR, LinearSVR
@@ -209,6 +209,12 @@ class Base():
                 "max_depth": [None, 10, 20, 30],
                 "min_samples_split": sp_randint(2, 10),
                 "min_samples_leaf": sp_randint(1, 10)
+            },
+            'GammaRegressor': {
+                'alpha': uniform(1e-3, 1),
+                'max_iter': [100, 500, 1000, 2000],
+                'tol': uniform(1e-4, 1e-2),
+                'warm_start': [True, False],
             },
             'GradientBoostingRegressor': {
                 "n_estimators": sp_randint(100, 500),
@@ -554,6 +560,10 @@ class Base():
             'ExtraTreesRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('extra_tree_regressor', ExtraTreesRegressor())
+            ]),
+            'GammaRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('gamma_regressor', GammaRegressor())
             ]),
             'GaussianProcessRegressor': Pipeline([
                 ('scaler', StandardScaler()),

@@ -6,7 +6,8 @@ from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
-    TheilSenRegressor, RANSACRegressor, LassoLarsIC, PoissonRegressor)
+    TheilSenRegressor, RANSACRegressor, LassoLarsIC, PoissonRegressor,
+    GammaRegressor)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
@@ -114,6 +115,18 @@ def test_extra_tree_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('extra_tree_regressor', ExtraTreesRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_gamma_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing Gamma Regressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('gamma_regressor', GammaRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
