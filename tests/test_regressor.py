@@ -11,7 +11,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.svm import SVR, NuSVR
+from sklearn.svm import SVR, NuSVR, LinearSVR
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor,
@@ -261,6 +261,18 @@ def test_linear_regression_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('linear_regression', LinearRegression())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_linear_svr_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing linear SVR """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('linear_svr', LinearSVR())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

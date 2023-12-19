@@ -9,7 +9,7 @@ from sklearn.linear_model import (
     LassoLarsIC, PoissonRegressor)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR
+from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR, LinearSVR
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
@@ -269,6 +269,16 @@ class Base():
             'LinearRegression': {
                 'fit_intercept': [True, False],
                 'positive': [True, False]
+            },
+            'LinearSVR': {
+                'epsilon': uniform(0.0, 1.0),
+                'C': loguniform(1e-2, 100),
+                'loss': ['epsilon_insensitive', 'squared_epsilon_insensitive'],
+                'fit_intercept': [True, False],
+                'intercept_scaling': uniform(1, 10),
+                'dual': [True, False],
+                'tol': uniform(1e-5, 1e-1),
+                'max_iter': [1000, 2000, 3000, 5000]
             },
             'MLPRegressor': {
                 "hidden_layer_sizes": [(50,), (100,), (50, 50), (100, 50)],
@@ -592,6 +602,10 @@ class Base():
             'LinearRegression': Pipeline([
                 ('scaler', StandardScaler()),
                 ('linear_regression', LinearRegression())
+            ]),
+            'LinearSVR': Pipeline([
+                ('scaler', StandardScaler()),
+                ('linear_svr', LinearSVR())
             ]),
             'MLPRegressor': Pipeline([
                 ('scaler', StandardScaler()),
