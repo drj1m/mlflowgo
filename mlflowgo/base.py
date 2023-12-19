@@ -4,7 +4,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis, LinearD
 from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
-    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
@@ -390,6 +390,18 @@ class Base():
                 'class_weight': [None, 'balanced'],
                 'decision_function_shape': ['ovo', 'ovr']
             },
+            'PassiveAggressiveClassifier': {
+                'C': uniform(0.01, 10),
+                'max_iter': [500, 1000, 2000, 5000],
+                'tol': uniform(1e-4, 1e-2),
+                'early_stopping': [True, False],
+                'validation_fraction': uniform(0.1, 0.2),
+                'n_iter_no_change': [5, 10, 15],
+                'shuffle': [True, False],
+                'loss': ['hinge', 'squared_hinge'],
+                'fit_intercept': [True, False],
+                'average': [False, True, 10, 20, 50]
+            },
             'Perceptron': {
                 "penalty": [None, 'l2', 'l1', 'elasticnet'],
                 "alpha": uniform(0.0001, 0.01),
@@ -588,6 +600,10 @@ class Base():
             'NuSVC': Pipeline([
                 ('scaler', StandardScaler()),
                 ('NuSVC', NuSVC())
+            ]),
+            'PassiveAggressiveClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('passive_aggressive', PassiveAggressiveClassifier(max_iter=1000, tol=1e-3))
             ]),
             'Perceptron': Pipeline([
                 ('scaler', StandardScaler()),

@@ -3,7 +3,7 @@ from sklearn.datasets import load_iris, load_breast_cancer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis, LinearDiscriminantAnalysis
-from sklearn.linear_model import LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron
+from sklearn.linear_model import LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron, PassiveAggressiveClassifier
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier,
     BaggingClassifier, VotingClassifier, StackingClassifier)
@@ -238,6 +238,19 @@ def test_nusvc_classifier_pipeline(iris):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('NuSVC', NuSVC())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_passive_aggresive_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing Perceptron Classifier"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('passive_aggressive', PassiveAggressiveClassifier(max_iter=1000, tol=1e-3))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
