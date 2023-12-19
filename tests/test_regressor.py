@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
-    TheilSenRegressor, RANSACRegressor)
+    TheilSenRegressor, RANSACRegressor, LassoLarsIC)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
@@ -225,6 +225,18 @@ def test_lasso_lars_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('lasso_lars', LassoLars())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_lasso_lars_ic_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing lasso lars IC regression"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('lasso_lars_ic', LassoLarsIC())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

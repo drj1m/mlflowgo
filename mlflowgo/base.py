@@ -5,7 +5,8 @@ from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
-    TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
+    TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron,
+    LassoLarsIC)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR
@@ -244,6 +245,11 @@ class Base():
             },
             'LassoLars': {
                 "alpha": uniform(0.01, 10)
+            },
+            'LassoLarsIC': {
+                'criterion': ['aic', 'bic'],
+                'normalize': [True, False],
+                'max_iter': [100, 500, 1000, 2000]
             },
             'LGBMRegressor': {
                 'num_leaves': sp_randint(31, 100),
@@ -566,6 +572,10 @@ class Base():
             'LassoLars': Pipeline([
                 ('scaler', StandardScaler()),
                 ('lasso_lars', LassoLars())
+            ]),
+            'LassoLarsIC': Pipeline([
+                ('scaler', StandardScaler()),
+                ('lasso_lars_ic', LassoLarsIC())
             ]),
             'LGBMRegressor': Pipeline([
                 ('scaler', StandardScaler()),
