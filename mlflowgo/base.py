@@ -12,7 +12,8 @@ from sklearn.svm import SVR, SVC, LinearSVC, NuSVC
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
-    AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
+    AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier,
+    HistGradientBoostingRegressor)
 from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel, Matern, WhiteKernel, RationalQuadratic, ExpSineSquared
@@ -217,6 +218,15 @@ class Base():
                 "n_neighbors": sp_randint(1, 30),
                 "weights": ['uniform', 'distance'],
                 "algorithm": ['auto', 'ball_tree', 'kd_tree', 'brute']
+            },
+            'HistGradientBoostingRegressor': {
+                'learning_rate': loguniform(1e-3, 1e-1),
+                'max_iter': [100, 200, 300, 500, 1000],
+                'max_depth': [None, 3, 5, 10, 20],
+                'min_samples_leaf': [20, 30, 40, 50],
+                'l2_regularization': loguniform(1e-6, 1e-1),
+                'max_leaf_nodes': [None, 10, 20, 31, 40],
+                'max_bins': [100, 150, 200, 255]
             },
             'HuberRegressor': {
                 "epsilon": uniform(1.0, 3.0),
@@ -517,6 +527,10 @@ class Base():
             'GradientBoostingRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('GPR', GradientBoostingRegressor())
+            ]),
+            'HistGradientBoostingRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('hist_gradient_boosting_regressor', HistGradientBoostingRegressor())
             ]),
             'KNeighborsRegressor': Pipeline([
                 ('scaler', StandardScaler()),

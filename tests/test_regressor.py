@@ -14,7 +14,8 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
-    AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor)
+    AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor,
+    HistGradientBoostingRegressor)
 from sklearn.neural_network import MLPRegressor
 from sklearn.isotonic import IsotonicRegression
 from sklearn.decomposition import PCA
@@ -139,6 +140,18 @@ def test_gradient_boosting_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('gradient_boosting', GradientBoostingRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_hist_gradient_boosting_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing a HistGradientBoostingRegressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('hist_gradient_boosting_regressor', HistGradientBoostingRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
