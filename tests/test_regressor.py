@@ -6,15 +6,17 @@ from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
-    TheilSenRegressor, RANSACRegressor)
+    TheilSenRegressor, RANSACRegressor, LassoLarsIC, PoissonRegressor,
+    GammaRegressor, TweedieRegressor)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
+from sklearn.svm import SVR, NuSVR, LinearSVR
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
-    AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor)
+    AdaBoostRegressor, BaggingRegressor, StackingRegressor, VotingRegressor,
+    HistGradientBoostingRegressor)
 from sklearn.neural_network import MLPRegressor
 from sklearn.isotonic import IsotonicRegression
 from sklearn.decomposition import PCA
@@ -107,12 +109,36 @@ def test_elastic_net_pipeline(df):
                              y=df['Target'], cv=-1)
 
 
-@pytest.mark.slow
 def test_extra_tree_regressor_pipeline(df):
     """ Test MLFlowGo with a pipeline containing Extra Tree Regressor"""
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('extra_tree_regressor', ExtraTreesRegressor())
+        ('extra_tree_regressor', ExtraTreeRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+@pytest.mark.slow
+def test_extra_trees_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing Extra Trees Regressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('extra_trees_regressor', ExtraTreesRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_gamma_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing Gamma Regressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('gamma_regressor', GammaRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
@@ -139,6 +165,18 @@ def test_gradient_boosting_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('gradient_boosting', GradientBoostingRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_hist_gradient_boosting_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing a HistGradientBoostingRegressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('hist_gradient_boosting_regressor', HistGradientBoostingRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
@@ -219,6 +257,18 @@ def test_lasso_lars_pipeline(df):
                              y=df['Target'], cv=-1)
 
 
+def test_lasso_lars_ic_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing lasso lars IC regression"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('lasso_lars_ic', LassoLarsIC())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
 def test_lightgbm_pipeline(df):
     """ Test MLFlowGo with a pipeline containing lightgbm regression"""
     pipeline = Pipeline([
@@ -243,11 +293,35 @@ def test_linear_regression_pipeline(df):
                              y=df['Target'], cv=-1)
 
 
+def test_linear_svr_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing linear SVR """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('linear_svr', LinearSVR())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
 def test_mlp_regression_pipeline(df):
     """ Test MLFlowGo with a pipeline containing MLP regression """
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('mlp_regressor', MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam'))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_nu_svr_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing NuSVR """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('nusvr', NuSVR())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
@@ -272,6 +346,18 @@ def test_passive_aggressive_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('passive_aggressive_regressor', PassiveAggressiveRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_poisson_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing passive aggressive regression """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('poisson_regressor', PoissonRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
@@ -350,6 +436,18 @@ def test_theil_sen_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('theil_sen', TheilSenRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_tweeedie_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing tweedie regressor """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('tweedie_regressor', TweedieRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

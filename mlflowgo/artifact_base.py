@@ -1,12 +1,14 @@
 import shap
 from sklearn.ensemble import (
     RandomForestClassifier, GradientBoostingClassifier, ExtraTreesRegressor,
-    RandomForestRegressor, GradientBoostingRegressor, ExtraTreesClassifier)
+    RandomForestRegressor, GradientBoostingRegressor, ExtraTreesClassifier,
+    HistGradientBoostingClassifier, HistGradientBoostingRegressor)
 from sklearn.linear_model import (
-    LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet, Lars,
-    LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
-    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, TheilSenRegressor,
-    RidgeClassifier, SGDClassifier, Perceptron)
+    LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
+    OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
+    SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
+    TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron,
+    LassoLarsIC, PoissonRegressor, GammaRegressor, TweedieRegressor)
 from sklearn.pipeline import Pipeline
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeRegressor, ExtraTreeClassifier
@@ -124,17 +126,17 @@ class ArtifactBase():
                        GradientBoostingRegressor, ExtraTreesClassifier,
                        ExtraTreeRegressor, ExtraTreeClassifier,
                        XGBClassifier, XGBRegressor, LGBMRegressor,
-                       LGBMClassifier)):
+                       LGBMClassifier, HistGradientBoostingClassifier,
+                       HistGradientBoostingRegressor)):
             return shap.TreeExplainer(model), X
 
         # Linear models
         elif isinstance(model,
-                        (LogisticRegression, LinearRegression, Ridge,
-                         Lasso, ElasticNet, Lars, LassoLars,
-                         OrthogonalMatchingPursuit, BayesianRidge,
-                         ARDRegression, SGDRegressor, PassiveAggressiveRegressor,
-                         HuberRegressor, TheilSenRegressor, RidgeClassifier,
-                         SGDClassifier, Perceptron)):
+                        (LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
+                        OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
+                        SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
+                        TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron,
+                        LassoLarsIC, PoissonRegressor, GammaRegressor, TweedieRegressor)):
             return shap.LinearExplainer(model, X), X
 
         else:

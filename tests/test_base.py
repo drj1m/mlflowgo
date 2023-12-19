@@ -212,6 +212,34 @@ def test_elastic_net_regressor_randomized_search(df):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_extra_tree_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('ExtraTreeRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_extra_tree_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('ExtraTreeRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('ExtraTreeRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_extra_trees_regressor_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('ExtraTreesRegressor')
@@ -240,6 +268,62 @@ def test_extra_trees_regressor_randomized_search(df):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_gamma_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('GammaRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_gamma_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('GammaRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('GammaRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_gaussian_process_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('GaussianProcessRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_gaussian_process_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('GaussianProcessRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('GaussianProcessRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_gradient_boosting_regressor_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('GradientBoostingRegressor')
@@ -252,6 +336,62 @@ def test_gradient_boosting_regressor_randomized_search(df):
     assert isinstance(param_dist, dict), "Should return a dictionary."
 
     pipeline = Base().get_basic_pipeline('GradientBoostingRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_hist_gradient_boosting_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('HistGradientBoostingRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_hist_gradient_boosting_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('HistGradientBoostingRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('HistGradientBoostingRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_isotonic_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('IsotonicRegression')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_isotonic_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('IsotonicRegression')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('IsotonicRegression')
     model_step = Base().get_model_step_from_pipeline(pipeline)
     param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
 
@@ -408,6 +548,34 @@ def test_lasso_lars_regressor_randomized_search(df):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_lasso_lars_ic_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('LassoLarsIC')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_lasso_lars_ic_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('LassoLarsIC')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('LassoLarsIC')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_lgbm_regressor_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('LGBMRegressor')
@@ -464,6 +632,34 @@ def test_linear_regressor_randomized_search(df):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_linear_svr_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('LinearSVR')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_linear_svr_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('LinearSVR')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('LinearSVR')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_mlp_regressor_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('MLPRegressor')
@@ -476,6 +672,34 @@ def test_mlp_regressor_randomized_search(df):
     assert isinstance(param_dist, dict), "Should return a dictionary."
 
     pipeline = Base().get_basic_pipeline('MLPRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_nu_svr_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('NuSVR')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_nu_svr_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('NuSVR')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('NuSVR')
     model_step = Base().get_model_step_from_pipeline(pipeline)
     param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
 
@@ -532,6 +756,34 @@ def test_passive_aggressive_regressor_randomized_search(df):
     assert isinstance(param_dist, dict), "Should return a dictionary."
 
     pipeline = Base().get_basic_pipeline('PassiveAggressiveRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_poisson_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('PoissonRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_poisson_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('PoissonRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('PoissonRegressor')
     model_step = Base().get_model_step_from_pipeline(pipeline)
     param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
 
@@ -688,6 +940,34 @@ def test_theil_sen_regressor_randomized_search(df):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_tweedie_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('TweedieRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_tweedie_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('TweedieRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('TweedieRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_xgboost_regressor_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('XGBRegressor')
@@ -800,6 +1080,11 @@ def test_extra_trees_classifier_randomized_search(iris):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_gaussian_process_classifier():
+    # Check that the function returns a dictionary
+    Base().get_basic_pipeline('GaussianProcessClassifier')
+
+
 def test_gradient_boosting_classifier_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('GradientBoostingClassifier')
@@ -884,6 +1169,90 @@ def test_lgbm_classifier_randomized_search(iris):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_label_propagation_classifier_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('LabelPropagation')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_label_propagation_classifier_randomized_search(iris):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('LabelPropagation')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('LabelPropagation')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=iris.drop(columns=['target']),
+                      y=iris['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_label_spreading_classifier_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('LabelSpreading')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_label_spreading_classifier_randomized_search(iris):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('LabelSpreading')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('LabelSpreading')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=iris.drop(columns=['target']),
+                      y=iris['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_linear_svc_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('LinearSVC')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_linear_svc_randomized_search(iris):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('LinearSVC')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('LinearSVC')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=iris.drop(columns=['target']),
+                      y=iris['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_linear_discriminant_analysis_classifier_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('LinearDiscriminantAnalysis')
@@ -952,6 +1321,90 @@ def test_mlp_classifier_randomized_search(iris):
     assert isinstance(param_dist, dict), "Should return a dictionary."
 
     pipeline = Base().get_basic_pipeline('MLPClassifier')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=iris.drop(columns=['target']),
+                      y=iris['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_nearest_centroid_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('NearestCentroid')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_nearest_centroid_randomized_search(iris):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('NearestCentroid')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('NearestCentroid')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=iris.drop(columns=['target']),
+                      y=iris['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_nu_svc_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('NuSVC')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_nu_svc_randomized_search(iris):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('NuSVC')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('NuSVC')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=iris.drop(columns=['target']),
+                      y=iris['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
+def test_passive_aggressive_classifier_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('PassiveAggressiveClassifier')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_passive_aggressive_classifier_randomized_search(iris):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('PassiveAggressiveClassifier')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('PassiveAggressiveClassifier')
     model_step = Base().get_model_step_from_pipeline(pipeline)
     param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
 
