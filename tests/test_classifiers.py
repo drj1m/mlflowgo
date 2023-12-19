@@ -15,6 +15,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -119,6 +120,19 @@ def test_knn_classifier_pipeline(iris):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('KNNC', KNeighborsClassifier())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_lgbm_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing LGBM Classifier """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('lgbm', LGBMClassifier())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
