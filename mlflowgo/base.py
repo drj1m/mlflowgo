@@ -8,7 +8,7 @@ from sklearn.linear_model import (
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.svm import SVR, SVC
+from sklearn.svm import SVR, SVC, LinearSVC
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
@@ -354,6 +354,18 @@ class Base():
             'LinearDiscriminantAnalysis': {
                 "solver": ['svd', 'lsqr', 'eigen']
             },
+            'LinearSVC': {
+                'C': loguniform(1e-3, 1e3),
+                'tol': loguniform(1e-5, 1e-1),
+                'max_iter': [500, 1000, 2000, 5000],
+                'class_weight': [None, 'balanced'],
+                'intercept_scaling': uniform(1, 10),
+                'loss': ['hinge', 'squared_hinge'],
+                'penalty': ['l1', 'l2'],
+                'dual': [True, False],
+                'fit_intercept': [True, False],
+                'multi_class': ['ovr', 'crammer_singer']
+            },
             'LogisticRegression': {
                 "C": uniform(0.1, 10),
                 "penalty": ['l2', 'l1', 'elasticnet'],
@@ -548,6 +560,10 @@ class Base():
             'LinearDiscriminantAnalysis': Pipeline([
                 ('scaler', StandardScaler()),
                 ('lda', LinearDiscriminantAnalysis())
+            ]),
+            'LinearSVC': Pipeline([
+                ('scaler', StandardScaler()),
+                ('linear_svc', LinearSVC())
             ]),
             'LogisticRegression': Pipeline([
                 ('scaler', StandardScaler()),
