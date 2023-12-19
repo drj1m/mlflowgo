@@ -15,6 +15,7 @@ from sklearn.ensemble import (
 from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
+from xgboost import XGBClassifier, XGBRegressor
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
 from scipy.stats import randint as sp_randint
 from scipy.stats import uniform, loguniform
@@ -266,6 +267,14 @@ class Base():
             'TheilSenRegressor': {
                 "max_subpopulation": sp_randint(10, 500)
             },
+            'XGBRegressor': {
+                "learning_rate": uniform(0.01, 0.29),
+                "max_depth": sp_randint(3, 10),
+                "min_child_weight": sp_randint(1, 10),
+                "gamma": uniform(0.0, 0.5),
+                "colsample_bytree": uniform(0.3, 0.7),
+                "subsample": uniform(0.5, 0.5)
+            },
             'AdaBoostClassifier': {
                 "n_estimators": sp_randint(50, 500),
                 "learning_rate": uniform(0.01, 1.0)
@@ -336,6 +345,13 @@ class Base():
             'SVC': {
                 "C": uniform(0.1, 10),
                 "kernel": ['linear', 'poly', 'rbf', 'sigmoid']
+            },
+            'XGBClassifier': {
+                "learning_rate": uniform(0.01, 0.29),
+                "max_depth": sp_randint(3, 10),
+                "min_child_weight": sp_randint(1, 10),
+                "gamma": uniform(0.0, 0.5),
+                "colsample_bytree": uniform(0.3, 0.7)
             }
         }
 
@@ -440,6 +456,10 @@ class Base():
                 ('scaler', StandardScaler()),
                 ('theil_sen', TheilSenRegressor())
             ]),
+            'XGBRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('xgboost_regressor', XGBRegressor())
+            ]),
             'AdaBoostClassifier': Pipeline([
                 ('ada_boost', AdaBoostClassifier())
             ]),
@@ -490,7 +510,11 @@ class Base():
             'SVC': Pipeline([
                 ('scaler', StandardScaler()),
                 ('SVC', SVC(probability=True))
-            ])
+            ]),
+            'XGBClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('xgboost_classifier', XGBClassifier())
+            ]),
         }
 
         if model_name in _pipeline:
