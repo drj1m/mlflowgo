@@ -19,6 +19,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.isotonic import IsotonicRegression
 from sklearn.decomposition import PCA
 from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -211,6 +212,18 @@ def test_lasso_lars_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('lasso_lars', LassoLars())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_lightgbm_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing lightgbm regression"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('lgbm', LGBMRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

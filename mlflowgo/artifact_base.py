@@ -11,6 +11,7 @@ from sklearn.pipeline import Pipeline
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeRegressor, ExtraTreeClassifier
 from xgboost import XGBClassifier, XGBRegressor
+from lightgbm import LGBMRegressor, LGBMClassifier 
 
 
 class ArtifactBase():
@@ -122,7 +123,8 @@ class ArtifactBase():
                        ExtraTreesRegressor, RandomForestRegressor,
                        GradientBoostingRegressor, ExtraTreesClassifier,
                        ExtraTreeRegressor, ExtraTreeClassifier,
-                       XGBClassifier, XGBRegressor)):
+                       XGBClassifier, XGBRegressor, LGBMRegressor,
+                       LGBMClassifier)):
             return shap.TreeExplainer(model), X
 
         # Linear models
