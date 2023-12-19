@@ -800,6 +800,11 @@ def test_extra_trees_classifier_randomized_search(iris):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_gaussian_process_classifier():
+    # Check that the function returns a dictionary
+    Base().get_basic_pipeline('GaussianProcessClassifier')
+
+
 def test_gradient_boosting_classifier_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('GradientBoostingClassifier')

@@ -13,6 +13,8 @@ from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
 from sklearn.neural_network import MLPRegressor, MLPClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from xgboost import XGBClassifier, XGBRegressor
@@ -427,6 +429,9 @@ class Base():
             'ExtraTreesRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('extra_tree_regressor', ExtraTreesRegressor())
+            ]),
+            'GaussianProcessClassifier': Pipeline([
+                ('GPC', GaussianProcessClassifier(1.0 * RBF(1.0)))
             ]),
             'GradientBoostingRegressor': Pipeline([
                 ('scaler', StandardScaler()),
