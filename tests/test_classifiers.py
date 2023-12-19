@@ -14,6 +14,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+from xgboost import XGBClassifier
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -282,6 +283,20 @@ def test_voting_classifier_pipeline(iris):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('voting_classifier', VotingClassifier(estimators=base_estimators, voting='soft'))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_xgboost_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline contianing XGBoost"""
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('xgboost_classifier', XGBClassifier())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,

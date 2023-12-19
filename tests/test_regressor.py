@@ -18,6 +18,7 @@ from sklearn.ensemble import (
 from sklearn.neural_network import MLPRegressor
 from sklearn.isotonic import IsotonicRegression
 from sklearn.decomposition import PCA
+from xgboost import XGBRegressor
 from mlflowgo.mlflowgo import MLFlowGo
 import numpy as np
 import pandas as pd
@@ -353,6 +354,19 @@ def test_voting_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('voting_regressor', VotingRegressor(estimators=base_estimators))
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_xgboost_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline contianing XGBoost"""
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('xgboost_regressor', XGBRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

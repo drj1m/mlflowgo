@@ -10,6 +10,7 @@ from sklearn.linear_model import (
 from sklearn.pipeline import Pipeline
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeRegressor, ExtraTreeClassifier
+from xgboost import XGBClassifier, XGBRegressor
 
 
 class ArtifactBase():
@@ -120,7 +121,8 @@ class ArtifactBase():
                        DecisionTreeClassifier, DecisionTreeRegressor,
                        ExtraTreesRegressor, RandomForestRegressor,
                        GradientBoostingRegressor, ExtraTreesClassifier,
-                       ExtraTreeRegressor, ExtraTreeClassifier)):
+                       ExtraTreeRegressor, ExtraTreeClassifier,
+                       XGBClassifier, XGBRegressor)):
             return shap.TreeExplainer(model), X
 
         # Linear models
