@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     LinearRegression, Ridge, Lasso, ElasticNet, Lars, LassoLars,
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor,
-    TheilSenRegressor, RANSACRegressor, LassoLarsIC)
+    TheilSenRegressor, RANSACRegressor, LassoLarsIC, PoissonRegressor)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
@@ -309,6 +309,18 @@ def test_passive_aggressive_regressor_pipeline(df):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('passive_aggressive_regressor', PassiveAggressiveRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+def test_poisson_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing passive aggressive regression """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('poisson_regressor', PoissonRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,

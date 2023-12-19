@@ -6,7 +6,7 @@ from sklearn.linear_model import (
     OrthogonalMatchingPursuit, BayesianRidge, ARDRegression,
     SGDRegressor, PassiveAggressiveRegressor, HuberRegressor, PassiveAggressiveClassifier,
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron,
-    LassoLarsIC)
+    LassoLarsIC, PoissonRegressor)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR
@@ -295,6 +295,14 @@ class Base():
                 "max_iter": sp_randint(1000, 5000),
                 "tol": loguniform(1e-4, 1e-1),
                 "C": uniform(0.1, 10)
+            },
+            'PoissonRegressor': {
+                'alpha': uniform(1e-3, 1),
+                'fit_intercept': [True, False],
+                'tol': uniform(1e-5, 1e-2),
+                'max_iter': [100, 200, 300, 500],
+                'warm_start': [True, False],
+                'verbose': [0, 1, 2]
             },
             'RandomForestRegressor': {
                 "n_estimators": sp_randint(10, 200),
@@ -600,6 +608,10 @@ class Base():
             'PassiveAggressiveRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('passive_aggressive_regressor', PassiveAggressiveRegressor())
+            ]),
+            'PoissonRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('poisson_regressor', PoissonRegressor())
             ]),
             'RandomForestRegressor': Pipeline([
                 ('scaler', StandardScaler()),
