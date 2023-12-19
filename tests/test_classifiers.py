@@ -13,7 +13,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
-from sklearn.semi_supervised import LabelPropagation
+from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
@@ -130,9 +130,23 @@ def test_knn_classifier_pipeline(iris):
 
 
 def test_label_propagation_classifier_pipeline(iris):
-    """ Test MLFlowGo with a pipeline containing KNeighborsClassifier """
+    """ Test MLFlowGo with a pipeline containing lable propagation """
     pipeline = Pipeline([
+        ('scaler', StandardScaler()),
         ('label_propagation', LabelPropagation())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_label_spreading_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing label spreading """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('label_spreading', LabelSpreading())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
