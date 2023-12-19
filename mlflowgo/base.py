@@ -8,7 +8,7 @@ from sklearn.linear_model import (
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.svm import SVR, SVC, LinearSVC
+from sklearn.svm import SVR, SVC, LinearSVC, NuSVC
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
@@ -378,6 +378,18 @@ class Base():
                 "alpha": uniform(0.0001, 0.05),
                 "learning_rate": ['constant', 'adaptive']
             },
+            'NuSVC': {
+                'nu': uniform(0.01, 1),
+                'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+                'degree': [2, 3, 4, 5],
+                'gamma': ['scale', 'auto'] + list(uniform(0.01, 1).rvs(10)),
+                'coef0': uniform(0, 10),
+                'shrinking': [True, False],
+                'probability': [True, False],
+                'tol': uniform(1e-4, 1e-2),
+                'class_weight': [None, 'balanced'],
+                'decision_function_shape': ['ovo', 'ovr']
+            },
             'Perceptron': {
                 "penalty": [None, 'l2', 'l1', 'elasticnet'],
                 "alpha": uniform(0.0001, 0.01),
@@ -572,6 +584,10 @@ class Base():
             'MLPClassifier': Pipeline([
                 ('scaler', StandardScaler()),
                 ('MLP', MLPClassifier())
+            ]),
+            'NuSVC': Pipeline([
+                ('scaler', StandardScaler()),
+                ('NuSVC', NuSVC())
             ]),
             'Perceptron': Pipeline([
                 ('scaler', StandardScaler()),

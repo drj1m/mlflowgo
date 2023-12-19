@@ -12,7 +12,7 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC, LinearSVC
+from sklearn.svm import SVC, LinearSVC, NuSVC
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
@@ -225,6 +225,19 @@ def test_mlp_classifier_pipeline(iris):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('MLP', MLPClassifier())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_nusvc_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing NuSVC """
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('NuSVC', NuSVC())
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
