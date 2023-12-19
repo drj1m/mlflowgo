@@ -9,6 +9,7 @@ from sklearn.linear_model import (
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC
+from sklearn.semi_supervised import LabelPropagation
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
@@ -319,6 +320,13 @@ class Base():
                 "weights": ['uniform', 'distance'],
                 "algorithm": ['auto', 'ball_tree', 'kd_tree', 'brute']
             },
+            'LabelPropagation': {
+                'kernel': ['knn', 'rbf'],
+                'gamma': uniform(0.01, 20),
+                'n_neighbors': sp_randint(2, 20),
+                'max_iter': sp_randint(100, 1000),
+                'tol': uniform(1e-4, 1e-2)
+            },
             'LGBMClassifier': {
                 'num_leaves': sp_randint(20, 60),
                 'max_depth': sp_randint(-1, 50),
@@ -517,6 +525,9 @@ class Base():
             'KNeighborsClassifier': Pipeline([
                 ('scaler', StandardScaler()),
                 ('KNNC', KNeighborsClassifier())
+            ]),
+            'LabelPropagation': Pipeline([
+                ('label_propagation', LabelPropagation())
             ]),
             'LGBMClassifier': Pipeline([
                 ('scaler', StandardScaler()),
