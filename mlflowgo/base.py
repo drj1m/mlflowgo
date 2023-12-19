@@ -8,7 +8,7 @@ from sklearn.linear_model import (
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron,
     LassoLarsIC, PoissonRegressor, GammaRegressor, TweedieRegressor)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, ExtraTreeRegressor
 from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR, LinearSVR
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.ensemble import (
@@ -203,6 +203,15 @@ class Base():
             'ElasticNet': {
                 "alpha": uniform(0.1, 10),
                 "l1_ratio": uniform(0.0, 1.0)
+            },
+            'ExtraTreeRegressor': {
+                'max_depth': [None] + list(range(3, 20)),
+                'min_samples_split': sp_randint(2, 11),
+                'min_samples_leaf': sp_randint(1, 11),
+                'min_weight_fraction_leaf': uniform(0, 0.5),
+                'max_features': ['auto', 'sqrt', 'log2', None],
+                'max_leaf_nodes': [None] + list(range(10, 50)),
+                'min_impurity_decrease': uniform(0.0, 0.1),
             },
             'ExtraTreesRegressor': {
                 "n_estimators": sp_randint(100, 500),
@@ -564,6 +573,10 @@ class Base():
             'ElasticNet': Pipeline([
                 ('scaler', StandardScaler()),
                 ('elastic_net', ElasticNet())
+            ]),
+            'ExtraTreeRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('extra_tree_regressor', ExtraTreeRegressor())
             ]),
             'ExtraTreesRegressor': Pipeline([
                 ('scaler', StandardScaler()),

@@ -11,7 +11,7 @@ from sklearn.linear_model import (
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
 from sklearn.svm import SVR, NuSVR, LinearSVR
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
@@ -109,12 +109,24 @@ def test_elastic_net_pipeline(df):
                              y=df['Target'], cv=-1)
 
 
-@pytest.mark.slow
 def test_extra_tree_regressor_pipeline(df):
     """ Test MLFlowGo with a pipeline containing Extra Tree Regressor"""
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('extra_tree_regressor', ExtraTreesRegressor())
+        ('extra_tree_regressor', ExtraTreeRegressor())
+    ])
+    mlflow_go = MLFlowGo(experiment_name="regression_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=df.drop('Target', axis=1),
+                             y=df['Target'], cv=-1)
+
+
+@pytest.mark.slow
+def test_extra_trees_regressor_pipeline(df):
+    """ Test MLFlowGo with a pipeline containing Extra Trees Regressor"""
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('extra_trees_regressor', ExtraTreesRegressor())
     ])
     mlflow_go = MLFlowGo(experiment_name="regression_test")
     mlflow_go.run_experiment(pipeline=pipeline,
