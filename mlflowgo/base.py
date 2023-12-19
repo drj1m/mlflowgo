@@ -16,6 +16,8 @@ from sklearn.ensemble import (
 from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel, Matern, WhiteKernel, RationalQuadratic, ExpSineSquared
+from sklearn.isotonic import IsotonicRegression
+from sklearn.decomposition import PCA
 from scipy.stats import uniform
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
@@ -219,6 +221,10 @@ class Base():
             'HuberRegressor': {
                 "epsilon": uniform(1.0, 3.0),
                 "alpha": uniform(0.00001, 0.1)
+            },
+            'IsotonicRegression': {
+                'increasing': [True, False, 'auto'],
+                'out_of_bounds': ['nan', 'clip', 'raise']
             },
             'Lars': {
                 "n_nonzero_coefs": sp_randint(1, 20)
@@ -519,6 +525,10 @@ class Base():
             'HuberRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('hubber_regressor', HuberRegressor(epsilon=1.35))
+            ]),
+            'IsotonicRegression': Pipeline([
+                ('pca', PCA(n_components=1)),
+                ('isotonic_regression', IsotonicRegression())
             ]),
             'Lars': Pipeline([
                 ('scaler', StandardScaler()),
