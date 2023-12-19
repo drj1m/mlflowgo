@@ -430,9 +430,6 @@ class Base():
                 ('scaler', StandardScaler()),
                 ('extra_tree_regressor', ExtraTreesRegressor())
             ]),
-            'GaussianProcessClassifier': Pipeline([
-                ('GPC', GaussianProcessClassifier(1.0 * RBF(1.0)))
-            ]),
             'GradientBoostingRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('GPR', GradientBoostingRegressor())
@@ -510,6 +507,9 @@ class Base():
             'ExtraTreesClassifier': Pipeline([
                 ('scaler', StandardScaler()),
                 ('extra_trees', ExtraTreesClassifier(n_estimators=100, max_depth=None))
+            ]),
+            'GaussianProcessClassifier': Pipeline([
+                ('GPC', GaussianProcessClassifier(1.0 * RBF(1.0)))
             ]),
             'GradientBoostingClassifier': Pipeline([
                 ('GBC', GradientBoostingClassifier())
