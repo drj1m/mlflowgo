@@ -10,7 +10,7 @@ from sklearn.ensemble import (
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import GaussianNB, BernoulliNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC, LinearSVC, NuSVC
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
@@ -51,6 +51,18 @@ def test_bagging_classifier_pipeline(iris):
     base_estimator = DecisionTreeClassifier()
     pipeline = Pipeline([
          ('bagging_classifier', BaggingClassifier(base_estimator=base_estimator, n_estimators=10)) 
+    ])
+    mlflow_go = MLFlowGo(experiment_name="classification_test")
+    mlflow_go.run_experiment(pipeline=pipeline,
+                             X=iris.drop(columns=['target']),
+                             y=iris['target'],
+                             cv=-1)
+
+
+def test_bernoulli_nb_classifier_pipeline(iris):
+    """ Test MLFlowGo with a pipeline containing BernoulliNB Classifier """
+    pipeline = Pipeline([
+         ('bernoulli_nb', BernoulliNB(force_alpha=True))
     ])
     mlflow_go = MLFlowGo(experiment_name="classification_test")
     mlflow_go.run_experiment(pipeline=pipeline,
