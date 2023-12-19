@@ -16,6 +16,7 @@ from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from xgboost import XGBClassifier, XGBRegressor
+from lightgbm import LGBMClassifier, LGBMRegressor
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
 from scipy.stats import randint as sp_randint
 from scipy.stats import uniform, loguniform
@@ -224,6 +225,21 @@ class Base():
             'LassoLars': {
                 "alpha": uniform(0.01, 10)
             },
+            'LGBMRegressor': {
+                'num_leaves': sp_randint(31, 100),
+                'max_depth': sp_randint(-1, 50),
+                'learning_rate': uniform(0.01, 0.2),
+                'n_estimators': sp_randint(100, 1000),
+                'min_child_samples': sp_randint(10, 30),
+                'subsample': uniform(0.7, 0.3),
+                'colsample_bytree': uniform(0.6, 0.4),
+                'reg_alpha': uniform(0, 1),
+                'reg_lambda': uniform(0, 1),
+                'min_child_weight': uniform(0, 10),
+                'subsample_freq': sp_randint(0, 10),
+                'boosting_type': ['gbdt', 'dart', 'goss', 'rf'],
+                'objective': ['regression', 'regression_l1', 'huber', 'quantile']
+            },
             'LinearRegression': {
                 'fit_intercept': [True, False],
                 'positive': [True, False]
@@ -300,6 +316,22 @@ class Base():
                 "n_neighbors": sp_randint(1, 30),
                 "weights": ['uniform', 'distance'],
                 "algorithm": ['auto', 'ball_tree', 'kd_tree', 'brute']
+            },
+            'LGBMClassifier': {
+                'num_leaves': sp_randint(20, 60),
+                'max_depth': sp_randint(-1, 50),
+                'learning_rate': uniform(0.01, 0.2),
+                'n_estimators': sp_randint(100, 1000),
+                'min_child_samples': sp_randint(10, 30),
+                'subsample': uniform(0.7, 0.3),
+                'colsample_bytree': uniform(0.6, 0.4),
+                'reg_alpha': uniform(0, 1),
+                'reg_lambda': uniform(0, 1),
+                'min_child_weight': uniform(0, 10),
+                'subsample_freq': sp_randint(0, 10),
+                'boosting_type': ['gbdt', 'dart', 'goss', 'rf'],
+                'is_unbalance': [True, False],
+                'class_weight': [None, 'balanced']
             },
             'LinearDiscriminantAnalysis': {
                 "solver": ['svd', 'lsqr', 'eigen']
@@ -420,6 +452,10 @@ class Base():
                 ('scaler', StandardScaler()),
                 ('lasso_lars', LassoLars())
             ]),
+            'LGBMRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('lgbm', LGBMRegressor())
+            ]),
             'LinearRegression': Pipeline([
                 ('scaler', StandardScaler()),
                 ('linear_regression', LinearRegression())
@@ -476,6 +512,10 @@ class Base():
             'KNeighborsClassifier': Pipeline([
                 ('scaler', StandardScaler()),
                 ('KNNC', KNeighborsClassifier())
+            ]),
+            'LGBMClassifier': Pipeline([
+                ('scaler', StandardScaler()),
+                ('lgbm', LGBMClassifier())
             ]),
             'LinearDiscriminantAnalysis': Pipeline([
                 ('scaler', StandardScaler()),
