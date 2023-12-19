@@ -240,6 +240,34 @@ def test_extra_trees_regressor_randomized_search(df):
     assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
 
 
+def test_gaussian_process_regressor_param_dist():
+    # Check that the function returns a dictionary
+    param_dist = Base().get_param_dist('GaussianProcessRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+
+def test_gaussian_process_regressor_randomized_search(df):
+    # Get parameter distribution
+    param_dist = Base().get_param_dist('GaussianProcessRegressor')
+    assert isinstance(param_dist, dict), "Should return a dictionary."
+
+    pipeline = Base().get_basic_pipeline('GaussianProcessRegressor')
+    model_step = Base().get_model_step_from_pipeline(pipeline)
+    param_dist = {f'{model_step}__{i}': j for i, j in param_dist.items()}
+
+    # Initialize the RandomizedSearchCV with RandomForestRegressor
+    random_search = RandomizedSearchCV(estimator=pipeline,
+                                       param_distributions=param_dist,
+                                       n_iter=5)
+
+    # Run RandomizedSearchCV on the dataset
+    random_search.fit(X=df.drop(columns=['target']),
+                      y=df['target'])
+
+    # Check if RandomizedSearchCV runs successfully
+    assert hasattr(random_search, 'best_estimator_'), "RandomizedSearchCV should have an attribute 'best_estimator_' after fitting."
+
+
 def test_gradient_boosting_regressor_param_dist():
     # Check that the function returns a dictionary
     param_dist = Base().get_param_dist('GradientBoostingRegressor')

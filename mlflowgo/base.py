@@ -14,8 +14,9 @@ from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
     AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier)
 from sklearn.neural_network import MLPRegressor, MLPClassifier
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
+from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel, Matern, WhiteKernel, RationalQuadratic, ExpSineSquared
+from scipy.stats import uniform
 from sklearn.base import is_classifier
 from sklearn.metrics._scorer import _SCORERS
 from xgboost import XGBClassifier, XGBRegressor
@@ -310,6 +311,23 @@ class Base():
                 "min_samples_leaf": sp_randint(1, 10),
                 "bootstrap": [True, False]
             },
+            'GaussianProcessRegressor': {
+                'kernel': [
+                    ConstantKernel() * RBF(),
+                    ConstantKernel() * RBF(length_scale_bounds=(1e-2, 1e3)),
+                    ConstantKernel() * Matern(nu=0.5),
+                    ConstantKernel() * Matern(nu=1.5),
+                    ConstantKernel() * Matern(nu=2.5),
+                    ConstantKernel() * RationalQuadratic(),
+                    ConstantKernel() * ExpSineSquared(),
+                    RBF() + WhiteKernel(),
+                    Matern() + WhiteKernel(),
+                    RationalQuadratic() + WhiteKernel(),
+                    ExpSineSquared() + WhiteKernel()
+                ],
+                'alpha': uniform(1e-10, 1e-1),
+                'n_restarts_optimizer': [0, 1, 5, 10]
+            },
             'GradientBoostingClassifier': {
                 "n_estimators": sp_randint(100, 500),
                 "learning_rate": uniform(0.01, 0.2),
@@ -485,6 +503,10 @@ class Base():
             'ExtraTreesRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('extra_tree_regressor', ExtraTreesRegressor())
+            ]),
+            'GaussianProcessRegressor': Pipeline([
+                ('scaler', StandardScaler()),
+                ('GPR', GaussianProcessRegressor(kernel=ConstantKernel(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))))
             ]),
             'GradientBoostingRegressor': Pipeline([
                 ('scaler', StandardScaler()),
