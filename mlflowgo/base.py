@@ -8,7 +8,7 @@ from sklearn.linear_model import (
     TheilSenRegressor, LogisticRegression, RidgeClassifier, SGDClassifier, Perceptron)
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.svm import SVR, SVC, LinearSVC, NuSVC
+from sklearn.svm import SVR, SVC, LinearSVC, NuSVC, NuSVR
 from sklearn.semi_supervised import LabelPropagation, LabelSpreading
 from sklearn.ensemble import (
     ExtraTreesRegressor, RandomForestRegressor, GradientBoostingRegressor,
@@ -270,6 +270,17 @@ class Base():
                 "solver": ['sgd', 'adam'],
                 "alpha": uniform(0.0001, 0.05),
                 "learning_rate": ['constant', 'adaptive']
+            },
+            'NuSVR': {
+                'nu': uniform(0.01, 1.0),
+                'C': loguniform(1e-2, 100),
+                'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+                'degree': [2, 3, 4, 5],
+                'gamma': ['scale', 'auto'] + list(uniform(0.01, 1).rvs(10)),
+                'coef0': uniform(0, 10),
+                'shrinking': [True, False],
+                'tol': uniform(1e-5, 1e-1),
+                'max_iter': [-1, 500, 1000, 2000]
             },
             'OrthogonalMatchingPursuit': {
                 "n_nonzero_coefs": sp_randint(1, 20)
@@ -567,6 +578,10 @@ class Base():
             'MLPRegressor': Pipeline([
                 ('scaler', StandardScaler()),
                 ('mlp_regressor', MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam'))
+            ]),
+            'NuSVR': Pipeline([
+                ('scaler', StandardScaler()),
+                ('nusvr', NuSVR())
             ]),
             'OrthogonalMatchingPursuit': Pipeline([
                 ('scaler', StandardScaler()),
