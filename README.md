@@ -18,6 +18,8 @@ You can install **mlflowgo** using pip:
 pip install mlflowgo
 ```
 
+When using mlflowgo, if you receive an error relating to the missing file: `libomp.dylib`, try running `conda install -c conda-forge lightgbm`
+
 ## Example run 1:
 
 Simple example using the sklearn dataset, in this case we assume some prior knowledge of which model will work best for this dataset.
