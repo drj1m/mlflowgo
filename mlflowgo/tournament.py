@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.base import is_classifier
 from . import CLASSIFIER_KEY, REGRESSOR_KEY
 import sklearn.metrics as sklm
+from lightgbm import LGBMClassifier, LGBMRegressor
 from tqdm import tqdm
 import warnings
 
@@ -228,6 +229,11 @@ class Tournament(Base):
 
             # Train the model
             try:
+                if model_name == 'LGBMClassifier' and len(self.y_train.unique()) > 2:
+                    model = LGBMClassifier(objective='multiclass', num_class=len(self.y_train.unique()))
+                elif model_name == 'LGBMRegressor' and len(self.y_train.unique()) > 2:
+                    model = LGBMRegressor(objective='multiclass', num_class=len(self.y_train.unique()))
+
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     model.fit(self.X_train, self.y_train)
