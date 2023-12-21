@@ -397,7 +397,10 @@ class ArtifactLogger:
         roc_auc = dict()
 
         for i in range(n_classes):
-            fpr[i], tpr[i], _ = roc_curve(y_true_binarized[:, i], y_scores[:, i])
+            try:
+                fpr[i], tpr[i], _ = roc_curve(y_true_binarized[:, i], y_scores[:, i])
+            except ValueError:
+                return
             roc_auc[i] = auc(fpr[i], tpr[i])
 
         # Compute micro-average ROC curve and ROC area
@@ -480,7 +483,10 @@ class ArtifactLogger:
         n_classes = len(class_names)
 
         for i in range(n_classes):
-            precision[i], recall[i], _ = precision_recall_curve(y_true == i, y_scores[:, i])
+            try:
+                precision[i], recall[i], _ = precision_recall_curve(y_true == i, y_scores[:, i])
+            except ValueError:
+                return
             average_precision[i] = average_precision_score(y_true == i, y_scores[:, i])
 
         # Plot the Precision-Recall curve for each class
