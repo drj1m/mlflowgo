@@ -13,6 +13,7 @@ import webbrowser
 import requests
 import time
 import pandas as pd
+import numpy as np
 
 
 class MLFlowGo():
@@ -65,8 +66,12 @@ class MLFlowGo():
         Returns:
             None
         """
-        X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.33)
+        if len(np.unique(y)) / len(y) < 0.2:
+            X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.33, stratify=y)
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.33)
 
         tournament = Tournament(
             X_train=X_train,
@@ -98,7 +103,11 @@ class MLFlowGo():
                 mlflow.sklearn.log_model(tournament.pipeline,
                                          tournament.model_name)
 
-        best_model_name = min(tournament.final_scores, key=tournament.final_scores.get)
+        if tournament.task_type == CLASSIFIER_KEY:
+            best_model_name = max(tournament.final_scores, key=tournament.final_scores.get)
+        elif tournament.task_type == REGRESSOR_KEY:
+            best_model_name = min(tournament.final_scores, key=tournament.final_scores.get)
+
         print(f"Optimal model: {best_model_name}")
         if register:
             model_uri = f"runs:/{tournament.model_info[best_model_name][0]}/{tournament.model_info[best_model_name][1]}"
