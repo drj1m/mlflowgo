@@ -27,6 +27,10 @@ class Classifier(ArtifactLogger):
         """
         super().__init__()
         self.base = base
+        self.ignored_models_for_shap = [
+            'NearestCentroid', 'AdaBoostClassifier', 'QuadraticDiscriminantAnalysis',
+            'LinearSVC', 'LinearDiscriminantAnalysis', 'SVC', 'KNeighborsClassifier',
+            'MLPClassifier', 'LabelPropagation', 'LabelSpreading']
 
     def log(self):
         """
@@ -95,15 +99,16 @@ class Classifier(ArtifactLogger):
                                         self.base.feature_names)
 
         # Log SHAP
-        self.log_shap_summary_plot(self.base.pipeline,
-                                   self.base.model_step,
-                                   self.base.X_train)
-        self.log_shap_partial_dependence_plot(self.base.pipeline,
-                                              self.base.model_step,
-                                              self.base.X_train)
-        self.log_classification_shap_scatter_plot(self.base.pipeline,
+        if self.base.model_name not in self.ignored_models_for_shap:
+            self.log_shap_summary_plot(self.base.pipeline,
+                                       self.base.model_step,
+                                       self.base.X_train)
+            self.log_shap_partial_dependence_plot(self.base.pipeline,
                                                   self.base.model_step,
                                                   self.base.X_train)
+            self.log_classification_shap_scatter_plot(self.base.pipeline,
+                                                      self.base.model_step,
+                                                      self.base.X_train)
 
         # Log exeriment summary
         self._generate_classification_experiment_summary()
