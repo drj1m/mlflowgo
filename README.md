@@ -20,6 +20,76 @@ pip install mlflowgo
 
 When using mlflowgo, if you receive an error relating to the missing file: `libomp.dylib`, try running `conda install -c conda-forge lightgbm`
 
+
+## Classifier models considered by default
+Some models do not auto generate SHAP plots due to memory demand and slow calculation time
+
+| Model Name                         | Includes SHAP (Y/N) |
+|------------------------------------|---------------------|
+| AdaBoostClassifier                 | N                   |
+| DecisionTreeClassifier             | Y                   |
+| ExtraTreesClassifier               | Y                   |
+| GaussianProcessClassifier          | Y                   |
+| GradientBoostingClassifier         | Y                   |
+| KNeighborsClassifier               | N                   |
+| LabelPropagation                   | N                   |
+| LabelSpreading                     | N                   |
+| LGBMClassifier                     | Y                   |
+| LinearDiscriminantAnalysis         | N                   |
+| LinearSVC                          | N                   |
+| LogisticRegression                 | Y                   |
+| MLPClassifier                      | N                   |
+| NearestCentroid                    | N                   |
+| NuSVC                              | Y                   |
+| PassiveAggressiveClassifier        | Y                   |
+| Perceptron                         | Y                   |
+| QuadraticDiscriminantAnalysis      | N                   |
+| RandomForestClassifier             | Y                   |
+| RidgeClassifier                    | Y                   |
+| SGDClassifier                      | Y                   |
+| SVC                                | N                   |
+| XGBClassifier                      | Y                   |
+
+
+## Regression models considered by default
+
+| Model Name                         | Includes SHAP (Y/N) |
+|------------------------------------|---------------------|
+| AdaBoostRegressor                  | Y                   |
+| ARDRegression                      | Y                   |
+| BayesianRidge                      | Y                   |
+| DecisionTreeRegressor              | Y                   |
+| ElasticNet                         | Y                   |
+| ExtraTreeRegressor                 | Y                   |
+| ExtraTreesRegressor                | Y                   |
+| GammaRegressor                     | Y                   |
+| GaussianProcessRegressor           | Y                   |
+| GradientBoostingRegressor          | Y                   |
+| HistGradientBoostingRegressor      | Y                   |
+| KNeighborsRegressor                | Y                   |
+| HuberRegressor                     | Y                   |
+| IsotonicRegression                 | Y                   |
+| Lars                               | Y                   |
+| Lasso                              | Y                   |
+| LassoLars                          | Y                   |
+| LassoLarsIC                        | Y                   |
+| LGBMRegressor                      | Y                   |
+| LinearRegression                   | Y                   |
+| LinearSVR                          | Y                   |
+| MLPRegressor                       | N                   |
+| NuSVR                              | Y                   |
+| OrthogonalMatchingPursuit          | Y                   |
+| PassiveAggressiveRegressor         | Y                   |
+| PoissonRegressor                   | Y                   |
+| RandomForestRegressor              | Y                   |
+| Ridge                              | Y                   |
+| SGDRegressor                       | Y                   |
+| SVR                                | N                   |
+| TheilSenRegressor                  | Y                   |
+| TweedieRegressor                   | Y                   |
+| XGBRegressor                       | Y                   |
+
+
 ## Example run 1:
 
 Simple example using the sklearn dataset, in this case we assume some prior knowledge of which model will work best for this dataset.
