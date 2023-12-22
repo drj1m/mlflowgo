@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mlflowgo"
-version = "1.0.2"
+version = "1.1.0"
 description = ""
 authors = ["Jimmy Weaver"]
 readme = "README.md"
