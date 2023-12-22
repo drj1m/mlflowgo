@@ -10,6 +10,8 @@ from sklearn.metrics import (
     classification_report, mean_squared_error, mean_absolute_error, r2_score)
 from sklearn.model_selection import learning_curve, validation_curve
 from sklearn.calibration import calibration_curve
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 import shap
 import scipy.stats as stats
 import numpy as np
@@ -1481,5 +1483,39 @@ class ArtifactLogger:
         plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
         plt.savefig(file_name)
         mlflow.log_artifact(file_name, 'EDA')
+        plt.close()  # Close the plot to free memory
+        os.remove(file_name)
+
+    def log_pca_scree_plot(self, df, columns: list = None):
+        """
+        Detect and log the count of outliers for each specified column and generate a single figure with box plots for all columns.
+
+        Parameters:
+        - df (DataFrame): The dataset to analyze.
+        - columns (list): The columns to analyze for outliers.
+        """
+        pca = PCA()
+        X_std = StandardScaler().fit_transform(df)
+        pca.fit(X_std)
+
+        # Explained variance ratio
+        explained_variance = pca.explained_variance_ratio_
+
+        plt.figure(figsize=(10, 5))
+        plt.bar(range(1, len(explained_variance)+1), explained_variance, alpha=0.5, align='center',
+                label='Individual explained variance')
+        plt.plot(range(1, len(explained_variance)+1), np.cumsum(explained_variance), marker='o',
+                 linestyle='-', color='r', label='Cumulative explained variance')
+        plt.ylabel('Explained variance ratio')
+        plt.xlabel('Principal components')
+        plt.legend(loc='best')
+        plt.tight_layout()
+        plt.title('Explained Variance')
+        plt.show()
+
+        file_name = "scree plot.png"
+        plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
+        plt.savefig(file_name)
+        mlflow.log_artifact(file_name, 'EDA/PCA')
         plt.close()  # Close the plot to free memory
         os.remove(file_name)
