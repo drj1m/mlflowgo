@@ -1352,6 +1352,9 @@ class ArtifactLogger:
         for column in df.columns:
             # Only process numerical columns
             if np.issubdtype(df[column].dtype, np.number):
+                median = df[column].median()
+                skewness = df[column].skew()
+                kurtosis = df[column].kurtosis()
                 percentage_duplicate_rows = df[column].duplicated().sum() / df.shape[0] * 100
                 percentage_missing_cells = df[column].isnull().sum() / df.shape[0] * 100
                 percentage_unique = df[column].nunique() / df.shape[0] * 100
@@ -1360,11 +1363,14 @@ class ArtifactLogger:
                 percentage_zeros = (df[column] == 0).sum() / df.shape[0] * 100
 
                 col_metrics = pd.DataFrame({
-                    'Percentage Duplicate Rows': percentage_duplicate_rows,
-                    'Percentage Missing Cells': percentage_missing_cells,
-                    'Percentage Unique': percentage_unique,
-                    'Percentage Infinite': percentage_infinite,
-                    'Percentage Zeros': percentage_zeros
+                    'median': median,
+                    'skewness': skewness,
+                    'kurtosis': kurtosis,
+                    'percentage Duplicate Rows': percentage_duplicate_rows,
+                    'percentage Missing Cells': percentage_missing_cells,
+                    'percentage Unique': percentage_unique,
+                    'percentage Infinite': percentage_infinite,
+                    'percentage Zeros': percentage_zeros
                 }, index=[column])
 
                 if additional_metrics.empty:
