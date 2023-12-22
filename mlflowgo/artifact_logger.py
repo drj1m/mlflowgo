@@ -1,6 +1,7 @@
 from .artifact_base import ArtifactBase
 import mlflow
 import matplotlib.pyplot as plt
+import matplotlib
 import seaborn as sns
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import (
@@ -1361,5 +1362,33 @@ class ArtifactLogger:
             file_name = 'correlation_matrix.png'
             plt.savefig(file_name, bbox_inches="tight")
             plt.close()
+            mlflow.log_artifact(file_name, 'EDA')
+            os.remove(file_name)
+
+    def log_distribution(self, df):
+        """
+        Log and plot the distribution of a specified column.
+
+        Parameters:
+        - df (DataFrame): The dataset to analyze.
+        """
+        matplotlib.use('Agg')
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False):
+            plot_height_per_column = 4
+            plot_width = 20
+            total_plot_height = plot_height_per_column * df.shape[1]
+
+            # Set up the matplotlib figure with dynamic dimensions
+            plt.figure(figsize=(plot_width, total_plot_height))
+
+            # Create a seaborn pairplot
+            g = sns.pairplot(df, diag_kind='kde')
+            g.fig.suptitle("Distribution of features", y=1.08)
+
+            # Save the plot and log it as an artifact
+            file_name = "distributions.png"
+            plt.savefig(file_name, bbox_inches="tight")
+            plt.clf()
+            plt.close('all')
             mlflow.log_artifact(file_name, 'EDA')
             os.remove(file_name)

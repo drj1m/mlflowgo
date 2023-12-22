@@ -45,9 +45,11 @@ class Regressor(ArtifactLogger):
             None
         """
         # region EDA
-        self.log_basic_info(pd.concat([self.base.X_train, self.base.X_test]))
-        self.log_descriptive_stats(pd.concat([self.base.X_train, self.base.X_test]))
-        self.log_correlation_matrix(pd.concat([self.base.X_train, self.base.X_test]))
+        full_dataset = pd.concat([self.base.X_train, self.base.X_test])
+        self.log_basic_info(full_dataset)
+        self.log_descriptive_stats(full_dataset)
+        self.log_correlation_matrix(full_dataset)
+        self.log_distribution(full_dataset)
 
         # endregion
 
