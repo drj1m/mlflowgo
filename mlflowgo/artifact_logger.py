@@ -1320,10 +1320,14 @@ class ArtifactLogger:
         - None
         """
 
-        mlflow.log_metric("EDA_num_rows", df.shape[0])
-        mlflow.log_metric("EDA_num_columns", df.shape[1])
+        mlflow.log_metric("EDA_num_observations", df.shape[0])
+        mlflow.log_metric("EDA_num_variables", df.shape[1])
         missing_values = df.isnull().sum().sum()
-        mlflow.log_metric("EDA_missing_values", missing_values)
+        mlflow.log_metric("EDA_missing_cells", missing_values)
+        mlflow.log_metric("EDA_duplicate_rows", df.duplicated().sum())
+        total_memory = df.memory_usage(deep=True).sum()
+        mlflow.log_metric("EDA_Total memory usage in bytes", total_memory)
+        mlflow.log_metric("EDA_Average memory usage per record in bytes", total_memory/df.shape[0])
         # Log data types as a text artifact
         dtypes_str = df.dtypes.to_string()
         mlflow.log_text(dtypes_str, "EDA/data_types.txt")
