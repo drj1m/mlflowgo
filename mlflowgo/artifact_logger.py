@@ -1437,7 +1437,6 @@ class ArtifactLogger:
         plt.subplots_adjust(top=0.8)
         plt.suptitle(overall_title, fontsize=16)
 
-
         # Save the entire figure with all boxplots
         file_name = "outliers.png"
         plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
