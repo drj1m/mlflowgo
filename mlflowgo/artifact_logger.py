@@ -1535,7 +1535,7 @@ class ArtifactLogger:
         scatter = plt.scatter(principalComponents[:, 0], principalComponents[:, 1], c=classes)
         plt.xlabel('First Principal Component')
         plt.ylabel('Second Principal Component')
-        plt.title('2D PCA of Iris Dataset')
+        plt.title('2D PCA of the dataset')
         plt.legend(handles=scatter.legend_elements()[0], labels=[str(i) for i in classes.unique()])
         plt.show()
 
