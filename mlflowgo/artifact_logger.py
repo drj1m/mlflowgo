@@ -1303,3 +1303,20 @@ class ArtifactLogger:
             plt.close()
             mlflow.log_artifact(file_name, 'Metrics')
             os.remove(file_name)
+
+    def log_basic_info(self, df, prefix=""):
+        """
+        Log basic information of the dataset including shape, data types, and missing values.
+
+        Parameters:
+        - df (DataFrame): The dataset to analyze.
+        - prefix (string): The prefix to apply to include in the metric name
+        """
+
+        mlflow.log_metric(f"EDA_{prefix}_num_rows", df.shape[0])
+        mlflow.log_metric(f"EDA_{prefix}_num_columns", df.shape[1])
+        missing_values = df.isnull().sum().sum()
+        mlflow.log_metric(f"EDA_{prefix}_missing_values", missing_values)
+        # Log data types as a text artifact
+        dtypes_str = df.dtypes.to_string()
+        mlflow.log_text(dtypes_str, "EDA/data_types.txt")

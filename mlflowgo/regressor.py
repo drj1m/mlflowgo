@@ -43,6 +43,11 @@ class Regressor(ArtifactLogger):
         Returns:
             None
         """
+        # region EDA
+        self.log_basic_info(self.base.X_test, prefix="test_dataframe")
+
+        # endregion
+
         # Log residual plot
         self.log_residual_plot(self.base.pipeline,
                                self.base.X_test,

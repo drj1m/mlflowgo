@@ -43,6 +43,11 @@ class Classifier(ArtifactLogger):
         Returns:
             None
         """
+        # region EDA
+        self.log_basic_info(self.base.X_test, prefix="test_dataframe")
+
+        # endregion
+
         y_pred = self.base.pipeline.predict(self.base.X_test)
 
         if hasattr(self.base.pipeline.named_steps[self.base.model_step], 'predict_proba'):
