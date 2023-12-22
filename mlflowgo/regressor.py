@@ -50,6 +50,7 @@ class Regressor(ArtifactLogger):
         self.log_descriptive_stats(full_dataset)
         self.log_correlation_matrix(full_dataset)
         self.log_distribution(full_dataset)
+        self.log_outliers(full_dataset)
 
         # endregion
 

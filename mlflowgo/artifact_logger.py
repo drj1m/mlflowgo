@@ -1392,3 +1392,56 @@ class ArtifactLogger:
             plt.close('all')
             mlflow.log_artifact(file_name, 'EDA')
             os.remove(file_name)
+
+    def log_outliers(self, df, columns: list = None):
+        """
+        Detect and log the count of outliers for each specified column and generate a single figure with box plots for all columns.
+
+        Parameters:
+        - df (DataFrame): The dataset to analyze.
+        - columns (list): The columns to analyze for outliers.
+        """
+        if columns is None:
+            columns = df.columns
+
+        outlier_present = False
+
+        # Determine the number of rows needed in the subplot
+        num_columns = len(columns)
+        num_rows = (num_columns // 3) + (num_columns % 3 > 0)  # Arrange plots in 3 columns
+
+        plt.figure(figsize=(18, 6 * num_rows))  # Adjust the size of the figure
+
+        for index, column in enumerate(columns, 1):
+            if df[column].dtype.kind in 'if':  # Check if the column is numerical
+                plt.subplot(num_rows, 3, index)
+                sns.boxplot(x=df[column])
+                plt.title(f'Boxplot of {column}')
+
+                # Calculate Q1, Q3, and IQR
+                Q1 = df[column].quantile(0.25)
+                Q3 = df[column].quantile(0.75)
+                IQR = Q3 - Q1
+                outliers = ((df[column] < (Q1 - 1.5 * IQR)) | (df[column] > (Q3 + 1.5 * IQR)))
+
+                if outliers.sum() > 0:
+                    outlier_present = True
+                # Log the count of outliers
+                if outlier_present:
+                    column = column.replace('-', '_').replace(' ', '_').replace('(', '').replace(')', '')
+                    mlflow.log_metric(f"EDA_{column}_outliers_count", outliers.sum())
+            else:
+                print(f"Column {column} is not numerical and will be skipped.")
+
+        overall_title = "Outliers Detected in Dataset" if outlier_present else "No Outliers Detected in Dataset"
+        plt.subplots_adjust(top=0.8)
+        plt.suptitle(overall_title, fontsize=16)
+
+
+        # Save the entire figure with all boxplots
+        file_name = "outliers.png"
+        plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
+        plt.savefig(file_name)
+        mlflow.log_artifact(file_name, 'EDA')
+        plt.close()  # Close the plot to free memory
+        os.remove(file_name)
