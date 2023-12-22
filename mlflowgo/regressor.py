@@ -5,6 +5,7 @@ from sklearn.svm import SVC, SVR
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
+import pandas as pd
 
 
 class Regressor(ArtifactLogger):
@@ -44,10 +45,9 @@ class Regressor(ArtifactLogger):
             None
         """
         # region EDA
-        self.log_basic_info(self.base.X_test, prefix="test_dataframe")
-        self.log_basic_info(self.base.X_train, prefix="train_dataframe")
-        self.log_descriptive_stats(self.base.X_test, prefix="test_dataframe")
-        self.log_descriptive_stats(self.base.X_train, prefix="train_dataframe")
+        self.log_basic_info(pd.concat([self.base.X_train, self.base.X_test]))
+        self.log_descriptive_stats(pd.concat([self.base.X_train, self.base.X_test]))
+        self.log_correlation_matrix(pd.concat([self.base.X_train, self.base.X_test]))
 
         # endregion
 

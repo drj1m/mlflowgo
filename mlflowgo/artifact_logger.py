@@ -1,6 +1,7 @@
 from .artifact_base import ArtifactBase
 import mlflow
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import (
     roc_curve, auc, confusion_matrix, ConfusionMatrixDisplay,
@@ -1304,13 +1305,12 @@ class ArtifactLogger:
             mlflow.log_artifact(file_name, 'Metrics')
             os.remove(file_name)
 
-    def log_basic_info(self, df, prefix=""):
+    def log_basic_info(self, df):
         """
         Log basic information of the dataset including shape, data types, and missing values.
 
         Parameters:
         - df (DataFrame): The dataset to analyse.
-        - prefix (string): The prefix to apply to include in the metric name
 
         Raises:
         - None
@@ -1319,21 +1319,20 @@ class ArtifactLogger:
         - None
         """
 
-        mlflow.log_metric(f"EDA_{prefix}_num_rows", df.shape[0])
-        mlflow.log_metric(f"EDA_{prefix}_num_columns", df.shape[1])
+        mlflow.log_metric("EDA_num_rows", df.shape[0])
+        mlflow.log_metric("EDA_num_columns", df.shape[1])
         missing_values = df.isnull().sum().sum()
-        mlflow.log_metric(f"EDA_{prefix}_missing_values", missing_values)
+        mlflow.log_metric("EDA_missing_values", missing_values)
         # Log data types as a text artifact
         dtypes_str = df.dtypes.to_string()
         mlflow.log_text(dtypes_str, "EDA/data_types.txt")
 
-    def log_descriptive_stats(self, df, prefix=""):
+    def log_descriptive_stats(self, df):
         """
         Log descriptive statistics of the dataset.
 
         Parameters:
         - df (DataFrame): The dataset to analyse.
-        - prefix (string): The prefix to apply to the file name
 
         Raises:
         - None
@@ -1342,8 +1341,25 @@ class ArtifactLogger:
         - None
         """
         with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
-            file_name = f'{prefix}_descriptive_stats.csv'
+            file_name = 'descriptive_stats.csv'
             descriptive_stats = df.describe().rename_axis('statistic').reset_index()
             descriptive_stats.to_csv(file_name, index=False)
             mlflow.log_artifact(file_name, 'EDA')
         os.remove(file_name)
+
+    def log_correlation_matrix(self, df):
+        """
+        Log and plot the correlation matrix of the dataset.
+
+        Parameters:
+        - df (DataFrame): The dataset to analyze.
+        """
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False):
+            plt.figure(figsize=(10, 8))
+            correlation_matrix = df.corr()
+            sns.heatmap(correlation_matrix, annot=True, fmt=".2f")
+            file_name = 'correlation_matrix.png'
+            plt.savefig(file_name, bbox_inches="tight")
+            plt.close()
+            mlflow.log_artifact(file_name, 'EDA')
+            os.remove(file_name)
