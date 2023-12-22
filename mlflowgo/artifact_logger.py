@@ -1413,7 +1413,6 @@ class ArtifactLogger:
         Parameters:
         - df (DataFrame): The dataset to analyze.
         """
-        matplotlib.use('Agg')
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False):
             plot_height_per_column = 4
             plot_width = 20
