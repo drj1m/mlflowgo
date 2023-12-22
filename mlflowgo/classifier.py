@@ -52,6 +52,7 @@ class Classifier(ArtifactLogger):
         self.log_distribution(full_dataset)
         self.log_outliers(full_dataset)
         self.log_pca_scree_plot(full_dataset)
+        self.log_pca_embedding(full_dataset, pd.concat([self.base.y_train, self.base.y_test]))
 
         # endregion
 

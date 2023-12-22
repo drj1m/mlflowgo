@@ -1486,13 +1486,12 @@ class ArtifactLogger:
         plt.close()  # Close the plot to free memory
         os.remove(file_name)
 
-    def log_pca_scree_plot(self, df, columns: list = None):
+    def log_pca_scree_plot(self, df):
         """
-        Detect and log the count of outliers for each specified column and generate a single figure with box plots for all columns.
+        Run PCA on the dataset and log the scree plot
 
         Parameters:
         - df (DataFrame): The dataset to analyze.
-        - columns (list): The columns to analyze for outliers.
         """
         pca = PCA()
         X_std = StandardScaler().fit_transform(df)
@@ -1514,6 +1513,34 @@ class ArtifactLogger:
         plt.show()
 
         file_name = "scree plot.png"
+        plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
+        plt.savefig(file_name)
+        mlflow.log_artifact(file_name, 'EDA/PCA')
+        plt.close()  # Close the plot to free memory
+        os.remove(file_name)
+
+    def log_pca_embedding(self, df, classes):
+        """
+        Run PCA on the dataset and log the embedding
+
+        Parameters:
+        - df (DataFrame): The dataset to analyze.
+        - classes (array): The array/list of the class names
+        """
+
+        pca = PCA()
+        X_std = StandardScaler().fit_transform(df)
+        principalComponents = pca.fit_transform(X_std)
+
+        plt.figure(figsize=(8, 6))
+        scatter = plt.scatter(principalComponents[:, 0], principalComponents[:, 1], c=classes)
+        plt.xlabel('First Principal Component')
+        plt.ylabel('Second Principal Component')
+        plt.title('2D PCA of Iris Dataset')
+        plt.legend(handles=scatter.legend_elements()[0], labels=[str(i) for i in classes.unique()])
+        plt.show()
+
+        file_name = "pca embedding.png"
         plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
         plt.savefig(file_name)
         mlflow.log_artifact(file_name, 'EDA/PCA')
