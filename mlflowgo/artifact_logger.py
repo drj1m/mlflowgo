@@ -1518,13 +1518,13 @@ class ArtifactLogger:
         plt.close()  # Close the plot to free memory
         os.remove(file_name)
 
-    def log_pca_embedding(self, df, classes):
+    def log_pca_embedding(self, df, target):
         """
         Run PCA on the dataset and log the embedding
 
         Parameters:
         - df (DataFrame): The dataset to analyze.
-        - classes (array): The array/list of the class names
+        - target (array): The target array
         """
 
         pca = PCA()
@@ -1532,14 +1532,55 @@ class ArtifactLogger:
         principalComponents = pca.fit_transform(X_std)
 
         plt.figure(figsize=(8, 6))
-        scatter = plt.scatter(principalComponents[:, 0], principalComponents[:, 1], c=classes)
+        scatter = plt.scatter(principalComponents[:, 0], principalComponents[:, 1], c=target)
         plt.xlabel('First Principal Component')
         plt.ylabel('Second Principal Component')
         plt.title('2D PCA of the dataset')
-        plt.legend(handles=scatter.legend_elements()[0], labels=[str(i) for i in classes.unique()])
+        plt.legend(handles=scatter.legend_elements()[0], labels=[str(i) for i in target.unique()])
         plt.show()
 
         file_name = "pca embedding.png"
+        plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
+        plt.savefig(file_name)
+        mlflow.log_artifact(file_name, 'EDA/PCA')
+        plt.close()  # Close the plot to free memory
+        os.remove(file_name)
+
+    def log_pca_biplot(self, df, target):
+        """
+        Run PCA on the dataset and log the biplot
+
+        Parameters:
+        - df (DataFrame): The dataset to analyze.
+        - target (array): The target array
+        """
+        pca = PCA()
+        X_std = StandardScaler().fit_transform(df)
+        principalComponents = pca.fit_transform(X_std)
+
+        score = principalComponents[:, 0:2]
+        coeff = np.transpose(pca.components_[0:2, :])
+        labels = df.columns
+        xs = score[:, 0]
+        ys = score[:, 1]
+        n = coeff.shape[0]
+        scalex = 1.0/(xs.max() - xs.min())
+        scaley = 1.0/(ys.max() - ys.min())
+
+        plt.figure(figsize=(10, 7))
+        plt.scatter(xs * scalex, ys * scaley, c=target, cmap='viridis')
+        for i in range(n):
+            plt.arrow(0, 0, coeff[i, 0], coeff[i, 1], color='r', alpha=0.5)
+            if labels is None:
+                plt.text(coeff[i, 0]* 1.15, coeff[i, 1] * 1.15, "Var"+str(i+1), color='g', ha='center', va='center')
+            else:
+                plt.text(coeff[i, 0]* 1.15, coeff[i, 1] * 1.15, labels[i], color='g', ha='center', va='center')
+        plt.xlabel("PC{}".format(1))
+        plt.ylabel("PC{}".format(2))
+        plt.grid()
+        plt.title('Biplot of PC1 vs PC2 for Iris Dataset')
+
+        file_name = "pca biplot.png"
         plt.tight_layout()  # Adjust subplots to fit into the figure area, leaving space for the title.
         plt.savefig(file_name)
         mlflow.log_artifact(file_name, 'EDA/PCA')
