@@ -27,7 +27,7 @@ class ArtifactLogger:
     """
 
     def __init__(self):
-        pass
+        matplotlib.use('Agg')
 
     def log_learning_curves(self, pipeline, X, y, cv, scoring):
         """
