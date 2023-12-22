@@ -1309,8 +1309,14 @@ class ArtifactLogger:
         Log basic information of the dataset including shape, data types, and missing values.
 
         Parameters:
-        - df (DataFrame): The dataset to analyze.
+        - df (DataFrame): The dataset to analyse.
         - prefix (string): The prefix to apply to include in the metric name
+
+        Raises:
+        - None
+
+        Returns:
+        - None
         """
 
         mlflow.log_metric(f"EDA_{prefix}_num_rows", df.shape[0])
@@ -1320,3 +1326,24 @@ class ArtifactLogger:
         # Log data types as a text artifact
         dtypes_str = df.dtypes.to_string()
         mlflow.log_text(dtypes_str, "EDA/data_types.txt")
+
+    def log_descriptive_stats(self, df, prefix=""):
+        """
+        Log descriptive statistics of the dataset.
+
+        Parameters:
+        - df (DataFrame): The dataset to analyse.
+        - prefix (string): The prefix to apply to the file name
+
+        Raises:
+        - None
+
+        Returns:
+        - None
+        """
+        with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
+            file_name = f'{prefix}_descriptive_stats.csv'
+            descriptive_stats = df.describe().rename_axis('statistic').reset_index()
+            descriptive_stats.to_csv(file_name, index=False)
+            mlflow.log_artifact(file_name, 'EDA')
+        os.remove(file_name)

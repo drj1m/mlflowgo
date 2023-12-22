@@ -45,6 +45,9 @@ class Regressor(ArtifactLogger):
         """
         # region EDA
         self.log_basic_info(self.base.X_test, prefix="test_dataframe")
+        self.log_basic_info(self.base.X_train, prefix="train_dataframe")
+        self.log_descriptive_stats(self.base.X_test, prefix="test_dataframe")
+        self.log_descriptive_stats(self.base.X_train, prefix="train_dataframe")
 
         # endregion
 
