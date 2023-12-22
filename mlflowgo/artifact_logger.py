@@ -1322,9 +1322,6 @@ class ArtifactLogger:
 
         mlflow.log_metric("EDA_num_observations", df.shape[0])
         mlflow.log_metric("EDA_num_variables", df.shape[1])
-        missing_values = df.isnull().sum().sum()
-        mlflow.log_metric("EDA_missing_cells", missing_values)
-        mlflow.log_metric("EDA_duplicate_rows", df.duplicated().sum())
         total_memory = df.memory_usage(deep=True).sum()
         mlflow.log_metric("EDA_Total memory usage in bytes", total_memory)
         mlflow.log_metric("EDA_Average memory usage per record in bytes", total_memory/df.shape[0])
@@ -1345,10 +1342,42 @@ class ArtifactLogger:
         Returns:
         - None
         """
-        with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False) as tmp:
+        # Calculate descriptive statistics
+        descriptive_stats = df.describe().rename_axis('Metric').reset_index()
+
+        # Initialize a DataFrame to hold additional metrics
+        additional_metrics = pd.DataFrame()
+
+        # Calculate additional metrics for each column
+        for column in df.columns:
+            # Only process numerical columns
+            if np.issubdtype(df[column].dtype, np.number):
+                percentage_duplicate_rows = df[column].duplicated().sum() / df.shape[0] * 100
+                percentage_missing_cells = df[column].isnull().sum() / df.shape[0] * 100
+                percentage_unique = df[column].nunique() / df.shape[0] * 100
+                is_infinite = df[column].replace([np.inf, -np.inf], np.nan).isnull() & ~df[column].isnull()
+                percentage_infinite = is_infinite.sum() / df.shape[0] * 100
+                percentage_zeros = (df[column] == 0).sum() / df.shape[0] * 100
+
+                col_metrics = pd.DataFrame({
+                    'Percentage Duplicate Rows': percentage_duplicate_rows,
+                    'Percentage Missing Cells': percentage_missing_cells,
+                    'Percentage Unique': percentage_unique,
+                    'Percentage Infinite': percentage_infinite,
+                    'Percentage Zeros': percentage_zeros
+                }, index=[column])
+
+                if additional_metrics.empty:
+                    additional_metrics = col_metrics.T
+                else:
+                    additional_metrics = additional_metrics.join(col_metrics.T)
+
+        # Combine descriptive and additional metrics
+        combined_metrics = pd.concat([descriptive_stats.set_index('Metric'), additional_metrics]).rename_axis("Metric").reset_index()
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False):
             file_name = 'descriptive_stats.csv'
-            descriptive_stats = df.describe().rename_axis('statistic').reset_index()
-            descriptive_stats.to_csv(file_name, index=False)
+            combined_metrics.to_csv(file_name, index=False)
             mlflow.log_artifact(file_name, 'EDA')
         os.remove(file_name)
 
